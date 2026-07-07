@@ -7,6 +7,18 @@ import { signInSchema } from "@/features/auth/schemas";
 export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt" },
   pages: { signIn: "/sign-in" },
+  logger: {
+    error(error) {
+      // A cookie signed with a rotated AUTH_SECRET is an expected condition,
+      // handled by treating the visitor as signed out — log it quietly
+      // instead of a full stack trace on every request.
+      if (error.name === "JWTSessionError") {
+        console.warn("[auth] stale session cookie ignored (signed out)");
+        return;
+      }
+      console.error(error);
+    },
+  },
   providers: [
     Credentials({
       credentials: { email: {}, password: {} },
