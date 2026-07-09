@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { PackageOpen } from "lucide-react";
 import { requireSession } from "@/lib/session";
 import { getProducts } from "@/features/products/queries";
+import { getLocale } from "@/lib/i18n/get-locale";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
 import {
   RequisitionForm,
   type RequisitionProductOption,
@@ -9,11 +11,15 @@ import {
 import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
 
-export const metadata: Metadata = { title: "เบิกสินค้า" };
+export const metadata: Metadata = { title: "เบิกสินค้า · Request Stock" };
 
 export default async function NewRequisitionPage() {
   const { orgId } = await requireSession();
-  const products = await getProducts(orgId);
+  const [products, dict] = await Promise.all([
+    getProducts(orgId),
+    getLocale().then(getDictionary),
+  ]);
+  const t = dict.requisitions;
 
   const options: RequisitionProductOption[] = products
     .filter((p) => p.quantity > 0)
@@ -27,16 +33,9 @@ export default async function NewRequisitionPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <PageHeader
-        title="เบิกสินค้า"
-        description="เลือกสินค้าและจำนวนที่ต้องการ ระบบจะส่งคำขอให้ผู้ดูแลอนุมัติ"
-      />
+      <PageHeader title={t.newTitle} description={t.newDesc} />
       {options.length === 0 ? (
-        <EmptyState
-          icon={PackageOpen}
-          title="ไม่มีสินค้าที่เบิกได้"
-          description="ขณะนี้ไม่มีสินค้าที่มีสต็อกคงเหลือ กรุณาติดต่อผู้ดูแลระบบ"
-        />
+        <EmptyState icon={PackageOpen} title={t.noProductsTitle} description={t.noProductsDesc} />
       ) : (
         <RequisitionForm products={options} />
       )}

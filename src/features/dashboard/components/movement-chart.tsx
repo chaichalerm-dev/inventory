@@ -12,25 +12,24 @@ import {
 import type { MovementPoint } from "@/features/dashboard/queries";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-const series = [
-  { key: "in", label: "รับเข้า", color: "var(--viz-in)" },
-  { key: "out", label: "เบิกออก", color: "var(--viz-out)" },
-] as const;
-
 type TooltipEntry = {
   dataKey?: string | number;
   value?: number | string;
   color?: string;
 };
 
+type Series = { key: "in" | "out"; label: string; color: string };
+
 function ChartTooltip({
   active,
   payload,
   label,
+  series,
 }: {
   active?: boolean;
   payload?: TooltipEntry[];
   label?: string;
+  series: Series[];
 }) {
   if (!active || !payload?.length) return null;
   return (
@@ -53,13 +52,26 @@ function ChartTooltip({
   );
 }
 
-export function MovementChart({ data }: { data: MovementPoint[] }) {
+export function MovementChart({
+  data,
+  title,
+  seriesInLabel,
+  seriesOutLabel,
+}: {
+  data: MovementPoint[];
+  title: string;
+  seriesInLabel: string;
+  seriesOutLabel: string;
+}) {
+  const series: Series[] = [
+    { key: "in", label: seriesInLabel, color: "var(--viz-in)" },
+    { key: "out", label: seriesOutLabel, color: "var(--viz-out)" },
+  ];
+
   return (
     <Card>
       <CardHeader className="flex flex-row flex-wrap items-center justify-between space-y-0">
-        <CardTitle className="text-base">
-          กราฟแสดงการเคลื่อนไหวสินค้า (30 วันล่าสุด)
-        </CardTitle>
+        <CardTitle className="text-base">{title}</CardTitle>
         <div className="flex items-center gap-4 text-xs text-muted-foreground">
           {series.map((s) => (
             <span key={s.key} className="flex items-center gap-1.5">
@@ -96,7 +108,7 @@ export function MovementChart({ data }: { data: MovementPoint[] }) {
                 tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
               />
               <Tooltip
-                content={<ChartTooltip />}
+                content={<ChartTooltip series={series} />}
                 cursor={{ stroke: "var(--border)", strokeWidth: 1 }}
               />
               {series.map((s) => (

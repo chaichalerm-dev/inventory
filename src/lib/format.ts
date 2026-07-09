@@ -16,7 +16,20 @@ const thaiDateFormat = new Intl.DateTimeFormat("th-TH", {
   year: "numeric",
 });
 
+// en-GB gives "9 Jul 2026" — day-first, matching the Thai format's order.
+const enDateFormat = new Intl.DateTimeFormat("en-GB", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+});
+
 export function formatDateThai(value: Date | string): string {
   return thaiDateFormat.format(typeof value === "string" ? new Date(value) : value);
+}
+
+/** Locale-aware date formatting — Buddhist calendar for "th", Gregorian for "en". */
+export function formatDate(value: Date | string, locale: "th" | "en"): string {
+  const date = typeof value === "string" ? new Date(value) : value;
+  return locale === "th" ? thaiDateFormat.format(date) : enDateFormat.format(date);
 }
 

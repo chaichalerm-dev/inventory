@@ -3,6 +3,7 @@
 import { useTransition } from "react";
 import { toast } from "sonner";
 import { updateSystemSettingsAction } from "@/features/settings/actions";
+import { useLanguage } from "@/lib/i18n/language-provider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -12,6 +13,7 @@ export function SystemSettingsForm({
 }: {
   showLoginDemoAccounts: boolean;
 }) {
+  const { dict } = useLanguage();
   const [isPending, startTransition] = useTransition();
 
   function handleToggle(checked: boolean) {
@@ -23,22 +25,21 @@ export function SystemSettingsForm({
         toast.error(result.error);
         return;
       }
-      toast.success("บันทึกการตั้งค่าแล้ว");
+      toast.success(dict.settings.settingsSaved);
     });
   }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">หน้าเข้าสู่ระบบ</CardTitle>
+        <CardTitle className="text-base">{dict.settings.loginPageTitle}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="flex items-center justify-between gap-4 rounded-md border p-3">
           <div>
-            <Label htmlFor="show-demo-accounts">แสดงบัญชีทดลองใช้งานในหน้า Login</Label>
+            <Label htmlFor="show-demo-accounts">{dict.settings.showDemoAccounts}</Label>
             <p className="mt-1 max-w-md text-xs text-muted-foreground">
-              ซ่อนกล่องอีเมล/รหัสผ่านตัวอย่างที่แสดงอยู่บนหน้าเข้าสู่ระบบ —
-              การตั้งค่านี้มีผลกับทั้งระบบ ไม่ใช่เฉพาะองค์กรนี้
+              {dict.settings.showDemoAccountsDesc}
             </p>
           </div>
           <Switch

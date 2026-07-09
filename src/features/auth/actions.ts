@@ -8,6 +8,8 @@ import { isDbUnavailableError, prisma } from "@/lib/prisma";
 import { uniqueSlug } from "@/lib/slug";
 import { isAdminRole } from "@/lib/roles";
 import { fail, ok, type ActionResult } from "@/lib/action-result";
+import { getLocale } from "@/lib/i18n/get-locale";
+import { getDictionary, type Dictionary } from "@/lib/i18n/get-dictionary";
 import {
   signInFormSchema,
   signUpSchema,
@@ -17,16 +19,17 @@ import {
 } from "@/features/auth/schemas";
 
 export async function signUpAction(input: SignUpInput): Promise<ActionResult> {
+  const dict = getDictionary(await getLocale());
   const parsed = signUpSchema.safeParse(input);
   if (!parsed.success) {
-    return fail("ข้อมูลไม่ถูกต้อง", parsed.error.flatten().fieldErrors);
+    return fail(dict.auth.invalidInput, parsed.error.flatten().fieldErrors);
   }
   const { name, email, password, organizationName } = parsed.data;
 
   try {
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
-      return fail("อีเมลนี้ถูกใช้งานแล้ว");
+      return fail(dict.users.emailTaken);
     }
 
     const passwordHash = await hash(password, 12);
@@ -49,20 +52,21 @@ export async function signUpAction(input: SignUpInput): Promise<ActionResult> {
     });
   } catch (error) {
     if (isDbUnavailableError(error)) {
-      return fail("ระบบทำงานช้าในขณะนี้ กรุณาลองใหม่อีกครั้ง");
+      return fail(dict.auth.dbSlow);
     }
     throw error;
   }
 
-  return signInWithCredentials({ email, password });
+  return signInWithCredentials({ email, password }, dict);
 }
 
 export async function signInAction(
   input: SignInFormInput,
 ): Promise<ActionResult> {
+  const dict = getDictionary(await getLocale());
   const parsed = signInFormSchema.safeParse(input);
   if (!parsed.success) {
-    return fail("ข้อมูลไม่ถูกต้อง", parsed.error.flatten().fieldErrors);
+    return fail(dict.auth.invalidInput, parsed.error.flatten().fieldErrors);
   }
   const { portal, email, password } = parsed.data;
 
@@ -75,28 +79,31 @@ export async function signInAction(
     verified = await verifyCredentials(email, password);
   } catch (error) {
     if (isDbUnavailableError(error)) {
-      return fail("ระบบทำงานช้าในขณะนี้ กรุณาลองใหม่อีกครั้ง");
+      return fail(dict.auth.dbSlow);
     }
     throw error;
   }
   if (!verified) {
-    return fail("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
+    return fail(dict.auth.invalidCredentials);
   }
   if (portal === "ADMIN" && !isAdminRole(verified.role)) {
-    return fail("บัญชีนี้เป็นบัญชีพนักงาน กรุณาเข้าสู่ระบบผ่านแท็บ User Login");
+    return fail(dict.auth.wrongTabIsUser);
   }
   if (portal === "USER" && isAdminRole(verified.role)) {
-    return fail("บัญชีนี้เป็นผู้ดูแลระบบ กรุณาเข้าสู่ระบบผ่านแท็บ Admin Login");
+    return fail(dict.auth.wrongTabIsAdmin);
   }
 
-  return signInWithCredentials({ email, password });
+  return signInWithCredentials({ email, password }, dict);
 }
 
 export async function signOutAction(): Promise<void> {
   await signOut({ redirectTo: "/sign-in" });
 }
 
-async function signInWithCredentials(input: SignInInput): Promise<ActionResult> {
+async function signInWithCredentials(
+  input: SignInInput,
+  dict: Dictionary,
+): Promise<ActionResult> {
   try {
     await signIn("credentials", { ...input, redirectTo: "/dashboard" });
     return ok();
@@ -104,10 +111,10 @@ async function signInWithCredentials(input: SignInInput): Promise<ActionResult> 
     // signIn signals success by throwing Next's redirect — let it through.
     if (isRedirectError(error)) throw error;
     if (error instanceof AuthError) {
-      return fail("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
+      return fail(dict.auth.invalidCredentials);
     }
     if (isDbUnavailableError(error)) {
-      return fail("ระบบทำงานช้าในขณะนี้ กรุณาลองใหม่อีกครั้ง");
+      return fail(dict.auth.dbSlow);
     }
     throw error;
   }

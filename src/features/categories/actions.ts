@@ -5,6 +5,8 @@ import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/session";
 import { fail, ok, type ActionResult } from "@/lib/action-result";
+import { getLocale } from "@/lib/i18n/get-locale";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { categorySchema, type CategoryInput } from "@/features/categories/schemas";
 
 function isUniqueViolation(error: unknown): boolean {
@@ -17,10 +19,11 @@ function isUniqueViolation(error: unknown): boolean {
 export async function createCategoryAction(
   input: CategoryInput,
 ): Promise<ActionResult> {
+  const dict = getDictionary(await getLocale());
   const { orgId } = await requireAdmin();
   const parsed = categorySchema.safeParse(input);
   if (!parsed.success) {
-    return fail("Invalid input", parsed.error.flatten().fieldErrors);
+    return fail(dict.categories.invalidInput, parsed.error.flatten().fieldErrors);
   }
 
   try {
@@ -29,9 +32,7 @@ export async function createCategoryAction(
     });
   } catch (error) {
     if (isUniqueViolation(error)) {
-      return fail("A category with this name already exists", {
-        name: ["Name is already taken"],
-      });
+      return fail(dict.categories.nameTaken, { name: [dict.categories.nameTaken] });
     }
     throw error;
   }
@@ -44,10 +45,11 @@ export async function updateCategoryAction(
   id: string,
   input: CategoryInput,
 ): Promise<ActionResult> {
+  const dict = getDictionary(await getLocale());
   const { orgId } = await requireAdmin();
   const parsed = categorySchema.safeParse(input);
   if (!parsed.success) {
-    return fail("Invalid input", parsed.error.flatten().fieldErrors);
+    return fail(dict.categories.invalidInput, parsed.error.flatten().fieldErrors);
   }
 
   try {
@@ -57,12 +59,10 @@ export async function updateCategoryAction(
       where: { id, organizationId: orgId },
       data: parsed.data,
     });
-    if (count === 0) return fail("Category not found");
+    if (count === 0) return fail(dict.categories.notFound);
   } catch (error) {
     if (isUniqueViolation(error)) {
-      return fail("A category with this name already exists", {
-        name: ["Name is already taken"],
-      });
+      return fail(dict.categories.nameTaken, { name: [dict.categories.nameTaken] });
     }
     throw error;
   }
@@ -72,12 +72,13 @@ export async function updateCategoryAction(
 }
 
 export async function deleteCategoryAction(id: string): Promise<ActionResult> {
+  const dict = getDictionary(await getLocale());
   const { orgId } = await requireAdmin();
 
   const { count } = await prisma.category.deleteMany({
     where: { id, organizationId: orgId },
   });
-  if (count === 0) return fail("Category not found");
+  if (count === 0) return fail(dict.categories.notFound);
 
   revalidatePath("/categories");
   revalidatePath("/products"); // product rows show the category name

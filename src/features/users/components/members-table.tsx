@@ -4,7 +4,8 @@ import type { ColumnDef } from "@tanstack/react-table";
 import type { MemberRow } from "@/features/users/queries";
 import { MemberRowActions } from "@/features/users/components/member-row-actions";
 import { DataTable } from "@/components/shared/data-table";
-import { formatDateThai } from "@/lib/format";
+import { formatDate } from "@/lib/format";
+import { useLanguage } from "@/lib/i18n/language-provider";
 
 export function MembersTable({
   members,
@@ -13,16 +14,18 @@ export function MembersTable({
   members: MemberRow[];
   currentUserId: string;
 }) {
+  const { dict, locale } = useLanguage();
+
   const columns: ColumnDef<MemberRow>[] = [
     {
       accessorKey: "name",
-      header: "ชื่อ-นามสกุล",
+      header: dict.users.fullName,
       cell: ({ row }) => (
         <span className="font-medium">
           {row.original.name}
           {row.original.userId === currentUserId ? (
             <span className="ml-2 text-xs font-normal text-muted-foreground">
-              (คุณ)
+              {dict.common.you}
             </span>
           ) : null}
         </span>
@@ -30,23 +33,23 @@ export function MembersTable({
     },
     {
       accessorKey: "email",
-      header: "อีเมล",
+      header: dict.users.email,
       cell: ({ row }) => (
         <span className="text-muted-foreground">{row.original.email}</span>
       ),
     },
     {
       accessorKey: "createdAt",
-      header: "เข้าร่วมเมื่อ",
+      header: dict.users.joinedAt,
       cell: ({ row }) => (
         <span className="text-muted-foreground">
-          {formatDateThai(row.original.createdAt)}
+          {formatDate(row.original.createdAt, locale)}
         </span>
       ),
     },
     {
       id: "actions",
-      header: () => <span className="block text-right">สิทธิ์การใช้งาน</span>,
+      header: () => <span className="block text-right">{dict.users.permission}</span>,
       cell: ({ row }) => (
         <MemberRowActions
           member={row.original}
@@ -61,7 +64,7 @@ export function MembersTable({
       columns={columns}
       data={members}
       filterColumn="name"
-      filterPlaceholder="ค้นหาชื่อผู้ใช้งาน…"
+      filterPlaceholder={dict.users.searchPlaceholder}
     />
   );
 }

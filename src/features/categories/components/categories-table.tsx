@@ -8,8 +8,11 @@ import { deleteCategoryAction } from "@/features/categories/actions";
 import { CategoryRowActions } from "@/features/categories/components/category-row-actions";
 import { DataTable } from "@/components/shared/data-table";
 import { Badge } from "@/components/ui/badge";
+import { useLanguage } from "@/lib/i18n/language-provider";
 
 export function CategoriesTable({ categories }: { categories: CategoryRow[] }) {
+  const { dict } = useLanguage();
+  const t = dict.categories;
   const [, startTransition] = useTransition();
   // Optimistic UI: the row disappears immediately; if the action fails the
   // transition ends without revalidation and React restores the real state.
@@ -25,7 +28,7 @@ export function CategoriesTable({ categories }: { categories: CategoryRow[] }) {
       if (!result.ok) {
         toast.error(result.error);
       } else {
-        toast.success("Category deleted");
+        toast.success(t.categoryDeleted);
       }
     });
   }
@@ -33,19 +36,19 @@ export function CategoriesTable({ categories }: { categories: CategoryRow[] }) {
   const columns: ColumnDef<CategoryRow>[] = [
     {
       accessorKey: "name",
-      header: "Name",
+      header: t.name,
       cell: ({ row }) => <span className="font-medium">{row.original.name}</span>,
     },
     {
       accessorKey: "description",
-      header: "Description",
+      header: t.description,
       cell: ({ row }) => (
         <span className="text-muted-foreground">{row.original.description ?? "—"}</span>
       ),
     },
     {
       accessorKey: "productCount",
-      header: "Products",
+      header: t.columnProducts,
       cell: ({ row }) => <Badge variant="secondary">{row.original.productCount}</Badge>,
     },
     {
@@ -63,7 +66,7 @@ export function CategoriesTable({ categories }: { categories: CategoryRow[] }) {
       columns={columns}
       data={optimisticCategories}
       filterColumn="name"
-      filterPlaceholder="Filter categories…"
+      filterPlaceholder={dict.common.search}
     />
   );
 }

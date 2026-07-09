@@ -14,6 +14,7 @@ import {
 import { toast } from "sonner";
 import { signInAction } from "@/features/auth/actions";
 import { signInSchema, type Portal, type SignInInput } from "@/features/auth/schemas";
+import { useLanguage } from "@/lib/i18n/language-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -48,21 +49,8 @@ const USER_DEMO: DemoAccount = {
   password: "Demo@1234",
 };
 
-const adminFeatures = [
-  "จัดการข้อมูลทั้งหมด",
-  "เพิ่ม / แก้ไข / ลบสินค้า",
-  "จัดการผู้ใช้งาน",
-  "ดูรายงานและตั้งค่าระบบ",
-];
-
-const userFeatures = [
-  "ดูรายการสินค้า",
-  "ค้นหาและเบิกสินค้า",
-  "แจ้งคืนสินค้า",
-  "ดูประวัติของตนเอง",
-];
-
 export function SignInForm({ showDemoAccounts }: { showDemoAccounts: boolean }) {
+  const { dict } = useLanguage();
   const [isPending, startTransition] = useTransition();
   const [rootError, setRootError] = useState<string | null>(null);
   const [portal, setPortal] = useState<Portal>("ADMIN");
@@ -114,11 +102,11 @@ export function SignInForm({ showDemoAccounts }: { showDemoAccounts: boolean }) 
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="ADMIN">
                 <ShieldCheck className="size-4" aria-hidden="true" />
-                Admin Login
+                {dict.auth.adminLogin}
               </TabsTrigger>
               <TabsTrigger value="USER">
                 <UserRound className="size-4" aria-hidden="true" />
-                User Login
+                {dict.auth.userLogin}
               </TabsTrigger>
             </TabsList>
           </Tabs>
@@ -130,12 +118,12 @@ export function SignInForm({ showDemoAccounts }: { showDemoAccounts: boolean }) 
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>อีเมล</FormLabel>
+                    <FormLabel>{dict.auth.email}</FormLabel>
                     <FormControl>
                       <Input
                         type="email"
                         autoComplete="email"
-                        placeholder="กรอกอีเมลของคุณ"
+                        placeholder={dict.auth.emailPlaceholder}
                         {...field}
                       />
                     </FormControl>
@@ -148,20 +136,22 @@ export function SignInForm({ showDemoAccounts }: { showDemoAccounts: boolean }) 
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>รหัสผ่าน</FormLabel>
+                    <FormLabel>{dict.auth.password}</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Input
                           type={showPassword ? "text" : "password"}
                           autoComplete="current-password"
-                          placeholder="กรอกรหัสผ่าน"
+                          placeholder={dict.auth.passwordPlaceholder}
                           className="pr-10"
                           {...field}
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword((v) => !v)}
-                          aria-label={showPassword ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
+                          aria-label={
+                            showPassword ? dict.auth.hidePassword : dict.auth.showPassword
+                          }
                           className="absolute inset-y-0 right-0 flex cursor-pointer items-center px-3 text-muted-foreground hover:text-foreground"
                         >
                           {showPassword ? (
@@ -185,37 +175,33 @@ export function SignInForm({ showDemoAccounts }: { showDemoAccounts: boolean }) 
                     onCheckedChange={(checked) => setRememberEmail(checked === true)}
                   />
                   <Label htmlFor="remember-email" className="text-sm font-normal">
-                    จดจำอีเมล
+                    {dict.auth.rememberEmail}
                   </Label>
                 </div>
                 <button
                   type="button"
-                  onClick={() =>
-                    toast.info("กรุณาติดต่อผู้ดูแลระบบเพื่อรีเซ็ตรหัสผ่าน")
-                  }
+                  onClick={() => toast.info(dict.auth.forgotPasswordToast)}
                   className="cursor-pointer text-sm text-primary underline-offset-4 hover:underline"
                 >
-                  ลืมรหัสผ่าน?
+                  {dict.auth.forgotPassword}
                 </button>
               </div>
 
               <FormRootError message={rootError} />
               <Button type="submit" className="w-full" disabled={isPending}>
-                {isPending ? "กำลังเข้าสู่ระบบ…" : "เข้าสู่ระบบ"}
+                {isPending ? dict.auth.signingIn : dict.auth.signIn}
               </Button>
             </form>
           </Form>
         </CardContent>
         <CardFooter className="justify-center text-sm text-muted-foreground">
-          ยังไม่มีบัญชี? ติดต่อผู้ดูแลระบบของคุณ
+          {dict.auth.noAccount}
         </CardFooter>
       </Card>
 
       <Card className="bg-muted/40">
         <CardContent className="pt-6">
-          <p className="mb-4 text-center text-sm font-semibold">
-            ระบบแยกตามสิทธิ์การใช้งาน
-          </p>
+          <p className="mb-4 text-center text-sm font-semibold">{dict.auth.roleSplitTitle}</p>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="mb-2 flex items-center gap-1.5 text-sm font-medium">
@@ -223,7 +209,7 @@ export function SignInForm({ showDemoAccounts }: { showDemoAccounts: boolean }) 
                 Admin
               </p>
               <ul className="space-y-1.5">
-                {adminFeatures.map((feature) => (
+                {dict.auth.adminFeatures.map((feature) => (
                   <li
                     key={feature}
                     className="flex items-start gap-1.5 text-xs text-muted-foreground"
@@ -241,10 +227,10 @@ export function SignInForm({ showDemoAccounts }: { showDemoAccounts: boolean }) 
               <Separator orientation="vertical" className="absolute left-0" />
               <p className="mb-2 flex items-center gap-1.5 text-sm font-medium">
                 <UserRound className="size-4 text-primary" aria-hidden="true" />
-                User (พนักงาน)
+                {dict.auth.userRoleLabel}
               </p>
               <ul className="space-y-1.5">
-                {userFeatures.map((feature) => (
+                {dict.auth.userFeatures.map((feature) => (
                   <li
                     key={feature}
                     className="flex items-start gap-1.5 text-xs text-muted-foreground"
@@ -272,9 +258,10 @@ function DemoAccountBox({
   account: DemoAccount;
   onUse: (account: DemoAccount) => void;
 }) {
+  const { dict } = useLanguage();
   return (
     <div className="mt-3 space-y-1.5 rounded-md border border-dashed p-2">
-      <p className="text-xs font-medium text-muted-foreground">ทดลองใช้งาน</p>
+      <p className="text-xs font-medium text-muted-foreground">{dict.auth.tryItOut}</p>
       <p className="break-all text-xs text-muted-foreground">{account.email}</p>
       <p className="text-xs text-muted-foreground">{account.password}</p>
       <Button
@@ -285,7 +272,7 @@ function DemoAccountBox({
         onClick={() => onUse(account)}
       >
         <PlayCircle className="size-3.5" aria-hidden="true" />
-        ใช้บัญชีนี้
+        {dict.auth.useThisAccount}
       </Button>
     </div>
   );

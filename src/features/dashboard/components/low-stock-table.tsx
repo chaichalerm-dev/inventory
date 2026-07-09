@@ -5,23 +5,42 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
-export function LowStockTable({ products }: { products: LowStockProduct[] }) {
+type LowStockTableProps = {
+  products: LowStockProduct[];
+  title: string;
+  viewAllLabel: string;
+  noLowStockLabel: string;
+  outOfStockLabel: string;
+  lowLabel: string;
+};
+
+export function LowStockTable({
+  products,
+  title,
+  viewAllLabel,
+  noLowStockLabel,
+  outOfStockLabel,
+  lowLabel,
+}: LowStockTableProps) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
-        <CardTitle className="text-base">สินค้าใกล้หมด / หมดสต็อก</CardTitle>
+        <CardTitle className="text-base">{title}</CardTitle>
         <Link
           href="/products"
           className="text-xs text-muted-foreground underline-offset-4 hover:underline"
         >
-          ดูทั้งหมด
+          {viewAllLabel}
         </Link>
       </CardHeader>
       <CardContent>
         {products.length === 0 ? (
           <p className="flex flex-col items-center gap-2 py-8 text-center text-sm text-muted-foreground">
-            <CircleCheck className="size-6 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
-            ไม่มีสินค้าใกล้หมด
+            <CircleCheck
+              className="size-6 text-emerald-600 dark:text-emerald-400"
+              aria-hidden="true"
+            />
+            {noLowStockLabel}
           </p>
         ) : (
           <ul className="divide-y">
@@ -51,7 +70,7 @@ export function LowStockTable({ products }: { products: LowStockProduct[] }) {
                           : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300",
                       )}
                     >
-                      {isOut ? "หมดสต็อก" : "ใกล้หมด"}
+                      {isOut ? outOfStockLabel : lowLabel}
                     </Badge>
                   </span>
                 </li>

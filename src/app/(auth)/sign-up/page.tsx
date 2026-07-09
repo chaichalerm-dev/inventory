@@ -9,26 +9,28 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { SignUpForm } from "@/features/auth/components/sign-up-form";
+import { getLocale } from "@/lib/i18n/get-locale";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
 
-export const metadata: Metadata = { title: "Create account" };
+export const metadata: Metadata = { title: "สร้างบัญชี · Create account" };
 
-export default function SignUpPage() {
+export default async function SignUpPage() {
+  const dict = getDictionary(await getLocale());
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Create your account</CardTitle>
-        <CardDescription>
-          Sets up your organization and makes you its owner.
-        </CardDescription>
+        <CardTitle>{dict.auth.signUpTitle}</CardTitle>
+        <CardDescription>{dict.auth.signUpDesc}</CardDescription>
       </CardHeader>
       <CardContent>
         <SignUpForm />
       </CardContent>
       <CardFooter className="justify-center text-sm text-muted-foreground">
         <span>
-          Already have an account?{" "}
+          {dict.auth.alreadyHaveAccount}{" "}
           <Link href="/sign-in" className="text-foreground underline underline-offset-4">
-            Sign in
+            {dict.auth.signIn}
           </Link>
         </span>
       </CardFooter>

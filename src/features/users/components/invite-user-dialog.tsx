@@ -7,6 +7,7 @@ import { Plus, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { inviteUserAction } from "@/features/users/actions";
 import { inviteUserSchema, type InviteUserInput } from "@/features/users/schemas";
+import { useLanguage } from "@/lib/i18n/language-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -36,24 +37,23 @@ import { FormRootError } from "@/components/shared/form-root-error";
 
 export function InviteUserDialog() {
   const [open, setOpen] = useState(false);
+  const { dict } = useLanguage();
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>
           <Plus className="size-4" />
-          เพิ่มผู้ใช้งาน
+          {dict.users.addUser}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <UserPlus className="size-5" aria-hidden="true" />
-            เพิ่มผู้ใช้งานใหม่
+            {dict.users.addUserDialogTitle}
           </DialogTitle>
-          <DialogDescription>
-            สร้างบัญชีและกำหนดสิทธิ์การใช้งานให้พนักงาน
-          </DialogDescription>
+          <DialogDescription>{dict.users.addUserDialogDesc}</DialogDescription>
         </DialogHeader>
         {/* Radix unmounts DialogContent children on close, so this form
             remounts with fresh state every time the dialog opens. */}
@@ -64,6 +64,7 @@ export function InviteUserDialog() {
 }
 
 function InviteUserForm({ onDone }: { onDone: () => void }) {
+  const { dict } = useLanguage();
   const [isPending, startTransition] = useTransition();
   const [rootError, setRootError] = useState<string | null>(null);
 
@@ -83,7 +84,7 @@ function InviteUserForm({ onDone }: { onDone: () => void }) {
         }
         return;
       }
-      toast.success("เพิ่มผู้ใช้งานเรียบร้อยแล้ว");
+      toast.success(dict.users.addUserSuccess);
       onDone();
     });
   }
@@ -96,7 +97,7 @@ function InviteUserForm({ onDone }: { onDone: () => void }) {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>ชื่อ-นามสกุล</FormLabel>
+              <FormLabel>{dict.users.fullName}</FormLabel>
               <FormControl>
                 <Input {...field} />
               </FormControl>
@@ -109,7 +110,7 @@ function InviteUserForm({ onDone }: { onDone: () => void }) {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>อีเมล</FormLabel>
+              <FormLabel>{dict.users.email}</FormLabel>
               <FormControl>
                 <Input type="email" autoComplete="email" {...field} />
               </FormControl>
@@ -122,7 +123,7 @@ function InviteUserForm({ onDone }: { onDone: () => void }) {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>รหัสผ่านเริ่มต้น</FormLabel>
+              <FormLabel>{dict.users.initialPassword}</FormLabel>
               <FormControl>
                 <Input type="text" autoComplete="off" {...field} />
               </FormControl>
@@ -135,7 +136,7 @@ function InviteUserForm({ onDone }: { onDone: () => void }) {
           name="role"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>สิทธิ์การใช้งาน</FormLabel>
+              <FormLabel>{dict.users.role}</FormLabel>
               <Select value={field.value} onValueChange={field.onChange}>
                 <FormControl>
                   <SelectTrigger className="w-full">
@@ -143,8 +144,8 @@ function InviteUserForm({ onDone }: { onDone: () => void }) {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="MEMBER">พนักงาน (User)</SelectItem>
-                  <SelectItem value="ADMIN">ผู้ดูแลระบบ (Admin)</SelectItem>
+                  <SelectItem value="MEMBER">{dict.users.roleUser}</SelectItem>
+                  <SelectItem value="ADMIN">{dict.users.roleAdmin}</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -153,7 +154,7 @@ function InviteUserForm({ onDone }: { onDone: () => void }) {
         />
         <FormRootError message={rootError} />
         <Button type="submit" className="w-full" disabled={isPending}>
-          {isPending ? "กำลังบันทึก…" : "เพิ่มผู้ใช้งาน"}
+          {isPending ? dict.common.saving : dict.users.addUser}
         </Button>
       </form>
     </Form>

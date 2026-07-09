@@ -6,6 +6,8 @@ import { Trash2 } from "lucide-react";
 import type { MemberRow } from "@/features/users/queries";
 import { removeMemberAction, updateMemberRoleAction } from "@/features/users/actions";
 import type { AssignableRole } from "@/features/users/schemas";
+import { useLanguage } from "@/lib/i18n/language-provider";
+import { interpolate } from "@/lib/i18n/get-dictionary";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -24,13 +26,14 @@ export function MemberRowActions({
   member: MemberRow;
   isSelf: boolean;
 }) {
+  const { dict } = useLanguage();
   const [isPending, startTransition] = useTransition();
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   if (member.role === "OWNER") {
     return (
       <div className="flex items-center justify-end gap-2">
-        <span className="text-sm text-muted-foreground">เจ้าของระบบ</span>
+        <span className="text-sm text-muted-foreground">{dict.users.roleOwner}</span>
         <EditMemberDialog member={member} />
       </div>
     );
@@ -40,7 +43,7 @@ export function MemberRowActions({
     startTransition(async () => {
       const result = await updateMemberRoleAction(member.membershipId, role);
       if (!result.ok) toast.error(result.error);
-      else toast.success("เปลี่ยนสิทธิ์การใช้งานแล้ว");
+      else toast.success(dict.users.roleChangeSuccess);
     });
   }
 
@@ -48,7 +51,7 @@ export function MemberRowActions({
     startTransition(async () => {
       const result = await removeMemberAction(member.membershipId);
       if (!result.ok) toast.error(result.error);
-      else toast.success("ลบผู้ใช้งานออกจากระบบแล้ว");
+      else toast.success(dict.users.deleteSuccess);
     });
   }
 
@@ -59,19 +62,19 @@ export function MemberRowActions({
         onValueChange={(value) => handleRoleChange(value as AssignableRole)}
         disabled={isPending || isSelf}
       >
-        <SelectTrigger className="w-36" aria-label={`สิทธิ์ของ ${member.name}`}>
+        <SelectTrigger className="w-36" aria-label={`${dict.users.role} ${member.name}`}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="MEMBER">พนักงาน (User)</SelectItem>
-          <SelectItem value="ADMIN">ผู้ดูแลระบบ (Admin)</SelectItem>
+          <SelectItem value="MEMBER">{dict.users.roleUser}</SelectItem>
+          <SelectItem value="ADMIN">{dict.users.roleAdmin}</SelectItem>
         </SelectContent>
       </Select>
       <EditMemberDialog member={member} />
       <Button
         variant="ghost"
         size="icon"
-        aria-label={`ลบ ${member.name}`}
+        aria-label={`${dict.common.delete} ${member.name}`}
         disabled={isPending || isSelf}
         onClick={() => setConfirmOpen(true)}
       >
@@ -80,9 +83,9 @@ export function MemberRowActions({
       <ConfirmDialog
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
-        title={`ลบ "${member.name}" ออกจากระบบ?`}
-        description="ผู้ใช้งานนี้จะไม่สามารถเข้าสู่ระบบขององค์กรนี้ได้อีก"
-        confirmLabel="ลบผู้ใช้งาน"
+        title={interpolate(dict.users.deleteConfirmTitle, { name: member.name })}
+        description={dict.users.deleteConfirmDesc}
+        confirmLabel={dict.users.deleteUser}
         onConfirm={handleRemove}
       />
     </div>

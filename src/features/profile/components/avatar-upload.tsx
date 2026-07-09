@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Trash2, Upload, User } from "lucide-react";
 import { updateAvatarAction } from "@/features/profile/actions";
+import { useLanguage } from "@/lib/i18n/language-provider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 
@@ -48,6 +49,7 @@ export function AvatarUpload({
   name: string;
   avatarUrl: string | null;
 }) {
+  const { dict } = useLanguage();
   const [preview, setPreview] = useState<string | null>(avatarUrl);
   const [isPending, startTransition] = useTransition();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -59,11 +61,11 @@ export function AvatarUpload({
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      toast.error("กรุณาเลือกไฟล์รูปภาพ");
+      toast.error(dict.profile.invalidImage);
       return;
     }
     if (file.size > MAX_FILE_BYTES) {
-      toast.error("ไฟล์รูปภาพต้องไม่เกิน 8MB");
+      toast.error(dict.profile.imageTooLarge);
       return;
     }
 
@@ -71,7 +73,7 @@ export function AvatarUpload({
     try {
       dataUrl = await resizeImage(file);
     } catch {
-      toast.error("ไม่สามารถประมวลผลรูปภาพนี้ได้");
+      toast.error(dict.profile.processError);
       return;
     }
 
@@ -84,7 +86,7 @@ export function AvatarUpload({
         setPreview(previous);
         return;
       }
-      toast.success("อัปเดตรูปโปรไฟล์แล้ว");
+      toast.success(dict.profile.photoUpdated);
       router.refresh();
     });
   }
@@ -97,7 +99,7 @@ export function AvatarUpload({
         return;
       }
       setPreview(null);
-      toast.success("ลบรูปโปรไฟล์แล้ว");
+      toast.success(dict.profile.photoRemoved);
       router.refresh();
     });
   }
@@ -126,7 +128,7 @@ export function AvatarUpload({
           onClick={() => inputRef.current?.click()}
         >
           <Upload className="size-4" />
-          {preview ? "เปลี่ยนรูป" : "อัปโหลดรูป"}
+          {preview ? dict.profile.changePhoto : dict.profile.uploadPhoto}
         </Button>
         {preview ? (
           <Button
@@ -137,7 +139,7 @@ export function AvatarUpload({
             onClick={handleRemove}
           >
             <Trash2 className="size-4" />
-            ลบรูปโปรไฟล์
+            {dict.profile.removePhoto}
           </Button>
         ) : null}
       </div>

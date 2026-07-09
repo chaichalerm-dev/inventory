@@ -5,6 +5,8 @@ import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import type { CategoryRow } from "@/features/categories/queries";
 import { CategoryFormDialog } from "@/features/categories/components/category-form-dialog";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { useLanguage } from "@/lib/i18n/language-provider";
+import { interpolate } from "@/lib/i18n/get-dictionary";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -19,6 +21,8 @@ type CategoryRowActionsProps = {
 };
 
 export function CategoryRowActions({ category, onDelete }: CategoryRowActionsProps) {
+  const { dict } = useLanguage();
+  const t = dict.categories;
   const [editOpen, setEditOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
@@ -26,18 +30,22 @@ export function CategoryRowActions({ category, onDelete }: CategoryRowActionsPro
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" aria-label={`Actions for ${category.name}`}>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={interpolate(dict.common.actionsFor, { name: category.name })}
+          >
             <MoreHorizontal className="size-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onSelect={() => setEditOpen(true)}>
             <Pencil className="size-4" />
-            Edit
+            {dict.common.edit}
           </DropdownMenuItem>
           <DropdownMenuItem variant="destructive" onSelect={() => setConfirmOpen(true)}>
             <Trash2 className="size-4" />
-            Delete
+            {dict.common.delete}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -46,11 +54,11 @@ export function CategoryRowActions({ category, onDelete }: CategoryRowActionsPro
       <ConfirmDialog
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
-        title={`Delete "${category.name}"?`}
+        title={interpolate(t.deleteConfirmTitle, { name: category.name })}
         description={
           category.productCount > 0
-            ? `${category.productCount} product(s) will keep existing but lose this category.`
-            : "This category has no products."
+            ? interpolate(t.deleteDescWithProducts, { count: category.productCount })
+            : t.deleteDescNoProducts
         }
         onConfirm={() => onDelete(category.id)}
       />

@@ -15,6 +15,7 @@ import {
 } from "@/features/products/schemas";
 import type { ProductRow } from "@/features/products/queries";
 import type { CategoryRow } from "@/features/categories/queries";
+import { useLanguage } from "@/lib/i18n/language-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -50,27 +51,22 @@ type ProductFormDialogProps = {
   product?: ProductRow;
 };
 
-const numberFields = [
-  { name: "price", label: "Price", step: "0.01" },
-  { name: "costPrice", label: "Cost price", step: "0.01" },
-  { name: "minStock", label: "Min stock", step: "1" },
-] as const;
-
 export function ProductFormDialog({
   open,
   onOpenChange,
   categories,
   product,
 }: ProductFormDialogProps) {
+  const { dict } = useLanguage();
+  const t = dict.products;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90svh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{product ? "Edit product" : "New product"}</DialogTitle>
+          <DialogTitle>{product ? t.editProduct : t.newProduct}</DialogTitle>
           <DialogDescription>
-            {product
-              ? "Update product details. Stock levels change via stock movements."
-              : "New products start at zero stock; add stock via a movement."}
+            {product ? t.editProductDesc : t.newProductDesc}
           </DialogDescription>
         </DialogHeader>
         {/* Radix unmounts DialogContent children on close, so this form
@@ -94,9 +90,17 @@ function ProductForm({
   categories: CategoryRow[];
   onDone: () => void;
 }) {
+  const { dict } = useLanguage();
+  const t = dict.products;
   const isEdit = product !== undefined;
   const [isPending, startTransition] = useTransition();
   const [rootError, setRootError] = useState<string | null>(null);
+
+  const numberFields = [
+    { name: "price", label: t.price, step: "0.01" },
+    { name: "costPrice", label: t.costPrice, step: "0.01" },
+    { name: "minStock", label: t.minStock, step: "1" },
+  ] as const;
 
   const form = useForm<ProductInput>({
     resolver: zodResolver(productSchema),
@@ -126,7 +130,7 @@ function ProductForm({
         }
         return;
       }
-      toast.success(isEdit ? "Product updated" : "Product created");
+      toast.success(isEdit ? t.productUpdated : t.productCreated);
       onDone();
     });
   }
@@ -140,9 +144,9 @@ function ProductForm({
             name="sku"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>SKU</FormLabel>
+                <FormLabel>{t.sku}</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g. WID-001" {...field} />
+                  <Input placeholder={t.skuPlaceholder} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -153,9 +157,9 @@ function ProductForm({
             name="unit"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Unit</FormLabel>
+                <FormLabel>{t.unit}</FormLabel>
                 <FormControl>
-                  <Input placeholder="pcs, kg, box…" {...field} />
+                  <Input placeholder={t.unitPlaceholder} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -167,7 +171,7 @@ function ProductForm({
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Name</FormLabel>
+              <FormLabel>{t.name}</FormLabel>
               <FormControl>
                 <Input {...field} />
               </FormControl>
@@ -180,7 +184,7 @@ function ProductForm({
           name="categoryId"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Category</FormLabel>
+              <FormLabel>{t.category}</FormLabel>
               <Select value={field.value} onValueChange={field.onChange}>
                 <FormControl>
                   <SelectTrigger className="w-full">
@@ -188,7 +192,7 @@ function ProductForm({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value={NO_CATEGORY}>No category</SelectItem>
+                  <SelectItem value={NO_CATEGORY}>{t.noCategory}</SelectItem>
                   {categories.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
                       {c.name}
@@ -232,7 +236,7 @@ function ProductForm({
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Description (optional)</FormLabel>
+              <FormLabel>{t.description}</FormLabel>
               <FormControl>
                 <Textarea rows={3} {...field} />
               </FormControl>
@@ -246,7 +250,7 @@ function ProductForm({
           className="w-full"
           disabled={isPending || (isEdit && !form.formState.isDirty)}
         >
-          {isPending ? "Saving…" : isEdit ? "Save changes" : "Create product"}
+          {isPending ? t.saving : isEdit ? t.saveChanges : t.createProduct}
         </Button>
       </form>
     </Form>

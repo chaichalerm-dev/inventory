@@ -12,6 +12,8 @@ import {
 } from "@/features/requisitions/actions";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { useLanguage } from "@/lib/i18n/language-provider";
+import { interpolate } from "@/lib/i18n/get-dictionary";
 import type { ActionResult } from "@/lib/action-result";
 
 type PendingAction = {
@@ -32,6 +34,8 @@ export function RequisitionRowActions({
   requisition,
   isAdmin,
 }: RequisitionRowActionsProps) {
+  const { dict } = useLanguage();
+  const t = dict.requisitions;
   const [isPending, startTransition] = useTransition();
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
 
@@ -56,16 +60,16 @@ export function RequisitionRowActions({
         disabled={isPending}
         onClick={() =>
           setPendingAction({
-            title: `อนุมัติ ${requisition.reqNumber}?`,
-            description: "ระบบจะตัดสต็อกสินค้าตามจำนวนที่เบิกทันที",
-            confirmLabel: "อนุมัติ",
+            title: interpolate(t.approveConfirmTitle, { reqNumber: requisition.reqNumber }),
+            description: t.approveConfirmDesc,
+            confirmLabel: t.approve,
             run: () => approveRequisitionAction(requisition.id),
-            successMessage: "อนุมัติรายการเบิกแล้ว",
+            successMessage: t.approveSuccess,
           })
         }
       >
         <Check className="size-4" />
-        อนุมัติ
+        {t.approve}
       </Button>,
       <Button
         key="reject"
@@ -74,17 +78,17 @@ export function RequisitionRowActions({
         disabled={isPending}
         onClick={() =>
           setPendingAction({
-            title: `ไม่อนุมัติ ${requisition.reqNumber}?`,
-            description: "รายการเบิกนี้จะถูกปฏิเสธและไม่มีการตัดสต็อก",
-            confirmLabel: "ไม่อนุมัติ",
+            title: interpolate(t.rejectConfirmTitle, { reqNumber: requisition.reqNumber }),
+            description: t.rejectConfirmDesc,
+            confirmLabel: t.reject,
             variant: "destructive",
             run: () => rejectRequisitionAction(requisition.id),
-            successMessage: "ปฏิเสธรายการเบิกแล้ว",
+            successMessage: t.rejectSuccess,
           })
         }
       >
         <X className="size-4" />
-        ไม่อนุมัติ
+        {t.reject}
       </Button>,
     );
   }
@@ -97,16 +101,16 @@ export function RequisitionRowActions({
         disabled={isPending}
         onClick={() =>
           setPendingAction({
-            title: `รับคืนสินค้า ${requisition.reqNumber}?`,
-            description: "ระบบจะเพิ่มสต็อกสินค้ากลับตามจำนวนที่เบิกไป",
-            confirmLabel: "รับคืน",
+            title: interpolate(t.confirmReturnTitle, { reqNumber: requisition.reqNumber }),
+            description: t.confirmReturnDesc,
+            confirmLabel: t.confirmReturn,
             run: () => confirmReturnAction(requisition.id),
-            successMessage: "รับคืนสินค้าเรียบร้อย",
+            successMessage: t.confirmReturnSuccess,
           })
         }
       >
         <PackageCheck className="size-4" />
-        รับคืน
+        {t.confirmReturn}
       </Button>,
     );
   }
@@ -120,16 +124,16 @@ export function RequisitionRowActions({
         disabled={isPending}
         onClick={() =>
           setPendingAction({
-            title: `แจ้งคืนสินค้า ${requisition.reqNumber}?`,
-            description: "ผู้ดูแลระบบจะตรวจสอบและยืนยันการรับคืนอีกครั้ง",
-            confirmLabel: "แจ้งคืน",
+            title: interpolate(t.requestReturnTitle, { reqNumber: requisition.reqNumber }),
+            description: t.requestReturnDesc,
+            confirmLabel: t.requestReturn,
             run: () => requestReturnAction(requisition.id),
-            successMessage: "แจ้งคืนสินค้าแล้ว รอผู้ดูแลระบบยืนยัน",
+            successMessage: t.requestReturnSuccess,
           })
         }
       >
         <Undo2 className="size-4" />
-        แจ้งคืน
+        {t.requestReturn}
       </Button>,
     );
   }

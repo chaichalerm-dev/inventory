@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import type { MembershipRole } from "@/generated/prisma/enums";
 import { isAdminRole } from "@/lib/roles";
+import type { Dictionary } from "@/lib/i18n/get-dictionary";
 
 export type NavItem = {
   href: string;
@@ -23,63 +24,58 @@ export type NavItem = {
 };
 
 export type NavGroup = {
-  /** Section heading, e.g. "คลังสินค้า" — hidden when the sidebar is collapsed. */
+  /** Section heading — hidden when the sidebar is collapsed. */
   label: string;
   items: NavItem[];
 };
 
-export const adminNavGroups: NavGroup[] = [
-  {
-    label: "ภาพรวม",
-    items: [{ href: "/dashboard", label: "แดชบอร์ด", icon: LayoutDashboard }],
-  },
-  {
-    label: "คลังสินค้า",
-    items: [
-      { href: "/products", label: "จัดการสินค้า", icon: Package },
-      { href: "/categories", label: "หมวดหมู่สินค้า", icon: Tags },
-      { href: "/stock", label: "รับเข้า / เคลื่อนไหว", icon: ArrowLeftRight },
-    ],
-  },
-  {
-    label: "การเบิก-คืน",
-    items: [
-      { href: "/requisitions", label: "รายการเบิกสินค้า", icon: ClipboardList },
-    ],
-  },
-  {
-    label: "ระบบ",
-    items: [
-      { href: "/users", label: "จัดการผู้ใช้งาน", icon: Users },
-      { href: "/reports", label: "รายงาน", icon: BarChart3 },
-      { href: "/settings", label: "ตั้งค่าระบบ", icon: Settings },
-    ],
-  },
-];
+export function getNavGroups(role: MembershipRole, dict: Dictionary): NavGroup[] {
+  const { nav } = dict;
 
-export const userNavGroups: NavGroup[] = [
-  {
-    label: "ภาพรวม",
-    items: [{ href: "/dashboard", label: "แดชบอร์ด", icon: LayoutDashboard }],
-  },
-  {
-    label: "สินค้า",
-    items: [{ href: "/products", label: "รายการสินค้า", icon: Package }],
-  },
-  {
-    label: "เบิก-คืนสินค้า",
-    items: [
-      { href: "/requisitions/new", label: "เบิกสินค้า", icon: PackageMinus },
+  if (isAdminRole(role)) {
+    return [
       {
-        href: "/requisitions",
-        label: "รายการเบิกของฉัน",
-        icon: History,
-        exact: true,
+        label: nav.groupOverview,
+        items: [{ href: "/dashboard", label: nav.dashboard, icon: LayoutDashboard }],
       },
-    ],
-  },
-];
+      {
+        label: nav.groupInventory,
+        items: [
+          { href: "/products", label: nav.products, icon: Package },
+          { href: "/categories", label: nav.categories, icon: Tags },
+          { href: "/stock", label: nav.stock, icon: ArrowLeftRight },
+        ],
+      },
+      {
+        label: nav.groupRequisitions,
+        items: [{ href: "/requisitions", label: nav.requisitions, icon: ClipboardList }],
+      },
+      {
+        label: nav.groupSystem,
+        items: [
+          { href: "/users", label: nav.users, icon: Users },
+          { href: "/reports", label: nav.reports, icon: BarChart3 },
+          { href: "/settings", label: nav.settings, icon: Settings },
+        ],
+      },
+    ];
+  }
 
-export function navGroupsForRole(role: MembershipRole): NavGroup[] {
-  return isAdminRole(role) ? adminNavGroups : userNavGroups;
+  return [
+    {
+      label: nav.groupOverview,
+      items: [{ href: "/dashboard", label: nav.dashboard, icon: LayoutDashboard }],
+    },
+    {
+      label: nav.groupProducts,
+      items: [{ href: "/products", label: nav.myProducts, icon: Package }],
+    },
+    {
+      label: nav.groupRequisitions,
+      items: [
+        { href: "/requisitions/new", label: nav.requisitionNew, icon: PackageMinus },
+        { href: "/requisitions", label: nav.myRequisitions, icon: History, exact: true },
+      ],
+    },
+  ];
 }

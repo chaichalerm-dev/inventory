@@ -11,6 +11,7 @@ import {
   requisitionSchema,
   type RequisitionInput,
 } from "@/features/requisitions/schemas";
+import { useLanguage } from "@/lib/i18n/language-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -45,6 +46,8 @@ type RequisitionFormProps = {
 };
 
 export function RequisitionForm({ products }: RequisitionFormProps) {
+  const { dict } = useLanguage();
+  const t = dict.requisitions;
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [rootError, setRootError] = useState<string | null>(null);
@@ -65,7 +68,7 @@ export function RequisitionForm({ products }: RequisitionFormProps) {
     startTransition(async () => {
       const result = await createRequisitionAction(values);
       if (result.ok) {
-        toast.success("ส่งคำขอเบิกสินค้าแล้ว รอผู้ดูแลระบบอนุมัติ");
+        toast.success(t.submitSuccess);
         router.push("/requisitions");
         router.refresh();
       } else {
@@ -93,17 +96,17 @@ export function RequisitionForm({ products }: RequisitionFormProps) {
                       name={`items.${index}.productId`}
                       render={({ field }) => (
                         <FormItem className="min-w-0 flex-1 basis-64">
-                          {index === 0 ? <FormLabel>สินค้า</FormLabel> : null}
+                          {index === 0 ? <FormLabel>{t.product}</FormLabel> : null}
                           <Select value={field.value} onValueChange={field.onChange}>
                             <FormControl>
                               <SelectTrigger className="w-full">
-                                <SelectValue placeholder="เลือกสินค้า" />
+                                <SelectValue placeholder={t.selectProduct} />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
                               {products.map((product) => (
                                 <SelectItem key={product.id} value={product.id}>
-                                  {product.name} — คงเหลือ {product.quantity}{" "}
+                                  {product.name} — {t.remaining} {product.quantity}{" "}
                                   {product.unit}
                                 </SelectItem>
                               ))}
@@ -123,7 +126,7 @@ export function RequisitionForm({ products }: RequisitionFormProps) {
                       name={`items.${index}.quantity`}
                       render={({ field }) => (
                         <FormItem className="w-28">
-                          {index === 0 ? <FormLabel>จำนวน</FormLabel> : null}
+                          {index === 0 ? <FormLabel>{t.quantity}</FormLabel> : null}
                           <FormControl>
                             <Input
                               type="number"
@@ -141,7 +144,7 @@ export function RequisitionForm({ products }: RequisitionFormProps) {
                         type="button"
                         variant="ghost"
                         size="icon"
-                        aria-label="ลบรายการนี้"
+                        aria-label={t.removeItem}
                         disabled={fields.length === 1}
                         onClick={() => remove(index)}
                       >
@@ -160,7 +163,7 @@ export function RequisitionForm({ products }: RequisitionFormProps) {
               onClick={() => append({ productId: "", quantity: 1 })}
             >
               <Plus className="size-4" />
-              เพิ่มสินค้า
+              {t.addProduct}
             </Button>
 
             <FormField
@@ -168,13 +171,9 @@ export function RequisitionForm({ products }: RequisitionFormProps) {
               name="note"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>หมายเหตุ (ถ้ามี)</FormLabel>
+                  <FormLabel>{t.note}</FormLabel>
                   <FormControl>
-                    <Textarea
-                      rows={3}
-                      placeholder="เช่น เบิกใช้ในแผนกบัญชี"
-                      {...field}
-                    />
+                    <Textarea rows={3} placeholder={t.notePlaceholder} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -189,10 +188,10 @@ export function RequisitionForm({ products }: RequisitionFormProps) {
                 onClick={() => router.back()}
                 disabled={isPending}
               >
-                ยกเลิก
+                {dict.common.cancel}
               </Button>
               <Button type="submit" disabled={isPending}>
-                {isPending ? "กำลังส่งคำขอ…" : "ส่งคำขอเบิก"}
+                {isPending ? t.submitting : t.submit}
               </Button>
             </div>
           </form>

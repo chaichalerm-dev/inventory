@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { SidebarNav } from "@/components/layout/sidebar-nav";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { UserMenu } from "@/components/layout/user-menu";
+import { LanguageSwitcher } from "@/components/layout/language-switcher";
+import { useLanguage } from "@/lib/i18n/language-provider";
 
 const SIDEBAR_COLLAPSED_KEY = "stockpro.sidebar-collapsed";
 
@@ -29,6 +31,7 @@ export function AppShell({
   children,
 }: AppShellProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const { dict } = useLanguage();
 
   useEffect(() => {
     // One-time hydration from localStorage (a browser-only API unavailable
@@ -63,7 +66,7 @@ export function AppShell({
                 <Boxes className="size-4" aria-hidden="true" />
               </span>
               <Link href="/dashboard" className="truncate font-semibold">
-                StockPro
+                {dict.common.appName}
               </Link>
             </>
           ) : null}
@@ -72,7 +75,7 @@ export function AppShell({
             size="icon"
             className={collapsed ? "mx-auto" : "ml-auto"}
             onClick={toggleCollapsed}
-            aria-label={collapsed ? "ขยายเมนู" : "ย่อเมนู"}
+            aria-label={collapsed ? dict.nav.expandMenu : dict.nav.collapseMenu}
           >
             {collapsed ? (
               <PanelLeftOpen className="size-4" aria-hidden="true" />
@@ -92,7 +95,8 @@ export function AppShell({
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <header className="flex h-14 shrink-0 items-center justify-between gap-2 border-b px-4">
           <MobileNav role={role} />
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-1">
+            <LanguageSwitcher />
             <UserMenu name={name} email={email} roleLabel={roleLabel} avatarUrl={avatarUrl} />
           </div>
         </header>

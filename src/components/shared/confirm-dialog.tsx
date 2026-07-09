@@ -11,6 +11,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/lib/i18n/language-provider";
 
 type ConfirmDialogProps = {
   open: boolean;
@@ -28,10 +29,12 @@ export function ConfirmDialog({
   onOpenChange,
   title,
   description,
-  confirmLabel = "ยืนยัน",
+  confirmLabel,
   variant = "destructive",
   onConfirm,
 }: ConfirmDialogProps) {
+  const { dict } = useLanguage();
+
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
@@ -40,7 +43,7 @@ export function ConfirmDialog({
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
+          <AlertDialogCancel>{dict.common.cancel}</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
             className={cn(
@@ -48,7 +51,7 @@ export function ConfirmDialog({
                 "bg-destructive text-white hover:bg-destructive/90",
             )}
           >
-            {confirmLabel}
+            {confirmLabel ?? dict.common.confirm}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

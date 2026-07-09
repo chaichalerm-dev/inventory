@@ -10,6 +10,7 @@ import {
 } from "@/features/categories/actions";
 import { categorySchema, type CategoryInput } from "@/features/categories/schemas";
 import type { CategoryRow } from "@/features/categories/queries";
+import { useLanguage } from "@/lib/i18n/language-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -38,13 +39,16 @@ type CategoryFormDialogProps = {
 };
 
 export function CategoryFormDialog({ open, onOpenChange, category }: CategoryFormDialogProps) {
+  const { dict } = useLanguage();
+  const t = dict.categories;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{category ? "Edit category" : "New category"}</DialogTitle>
+          <DialogTitle>{category ? t.editCategory : t.newCategory}</DialogTitle>
           <DialogDescription>
-            {category ? "Update the category details." : "Group related products together."}
+            {category ? t.editCategoryDesc : t.newCategoryDesc}
           </DialogDescription>
         </DialogHeader>
         {/* Radix unmounts DialogContent children on close, so this form
@@ -62,6 +66,8 @@ function CategoryForm({
   category?: CategoryRow;
   onDone: () => void;
 }) {
+  const { dict } = useLanguage();
+  const t = dict.categories;
   const isEdit = category !== undefined;
   const [isPending, startTransition] = useTransition();
   const [rootError, setRootError] = useState<string | null>(null);
@@ -88,7 +94,7 @@ function CategoryForm({
         }
         return;
       }
-      toast.success(isEdit ? "Category updated" : "Category created");
+      toast.success(isEdit ? t.categoryUpdated : t.categoryCreated);
       onDone();
     });
   }
@@ -101,7 +107,7 @@ function CategoryForm({
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Name</FormLabel>
+              <FormLabel>{t.name}</FormLabel>
               <FormControl>
                 <Input {...field} />
               </FormControl>
@@ -114,7 +120,7 @@ function CategoryForm({
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Description (optional)</FormLabel>
+              <FormLabel>{t.description}</FormLabel>
               <FormControl>
                 <Textarea rows={3} {...field} />
               </FormControl>
@@ -128,7 +134,7 @@ function CategoryForm({
           className="w-full"
           disabled={isPending || (isEdit && !form.formState.isDirty)}
         >
-          {isPending ? "Saving…" : isEdit ? "Save changes" : "Create category"}
+          {isPending ? t.saving : isEdit ? t.saveChanges : t.createCategory}
         </Button>
       </form>
     </Form>

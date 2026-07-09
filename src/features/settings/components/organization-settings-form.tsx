@@ -9,6 +9,7 @@ import {
   organizationSettingsSchema,
   type OrganizationSettingsInput,
 } from "@/features/settings/schemas";
+import { useLanguage } from "@/lib/i18n/language-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,6 +28,7 @@ export function OrganizationSettingsForm({
 }: {
   organizationName: string;
 }) {
+  const { dict } = useLanguage();
   const [isPending, startTransition] = useTransition();
   const [rootError, setRootError] = useState<string | null>(null);
 
@@ -43,14 +45,14 @@ export function OrganizationSettingsForm({
         setRootError(result.error);
         return;
       }
-      toast.success("บันทึกการตั้งค่าแล้ว");
+      toast.success(dict.settings.settingsSaved);
     });
   }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">ข้อมูลองค์กร</CardTitle>
+        <CardTitle className="text-base">{dict.settings.orgInfoTitle}</CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -64,7 +66,7 @@ export function OrganizationSettingsForm({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>ชื่อองค์กร</FormLabel>
+                  <FormLabel>{dict.settings.orgName}</FormLabel>
                   <FormControl>
                     <Input {...field} />
                   </FormControl>
@@ -74,7 +76,7 @@ export function OrganizationSettingsForm({
             />
             <FormRootError message={rootError} />
             <Button type="submit" disabled={isPending || !form.formState.isDirty}>
-              {isPending ? "กำลังบันทึก…" : "บันทึกการเปลี่ยนแปลง"}
+              {isPending ? dict.common.saving : dict.common.saveChanges}
             </Button>
           </form>
         </Form>

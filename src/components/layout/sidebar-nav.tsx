@@ -4,7 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { MembershipRole } from "@/generated/prisma/enums";
 import { cn } from "@/lib/utils";
-import { navGroupsForRole, type NavItem } from "@/config/nav";
+import { getNavGroups, type NavItem } from "@/config/nav";
+import { useLanguage } from "@/lib/i18n/language-provider";
 import {
   Tooltip,
   TooltipContent,
@@ -24,10 +25,11 @@ export function SidebarNav({
   onNavigate?: () => void;
 }) {
   const pathname = usePathname();
-  const groups = navGroupsForRole(role);
+  const { dict } = useLanguage();
+  const groups = getNavGroups(role, dict);
 
   return (
-    <nav aria-label="เมนูหลัก" className="flex flex-col gap-4 p-2">
+    <nav aria-label={dict.nav.mainNavigation} className="flex flex-col gap-4 p-2">
       {groups.map((group) => (
         <div key={group.label} className="flex flex-col gap-1">
           {collapsed ? (

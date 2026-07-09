@@ -10,57 +10,65 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { getUserDashboard } from "@/features/dashboard/queries";
+import type { Dictionary } from "@/lib/i18n/get-dictionary";
+import type { Locale } from "@/lib/i18n/types";
 import { StatCard } from "@/features/dashboard/components/stat-card";
 import { RequisitionStatusBadge } from "@/features/requisitions/components/requisition-status-badge";
 import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatDateThai } from "@/lib/format";
-
-const quickLinks: { href: string; label: string; icon: LucideIcon }[] = [
-  { href: "/products", label: "ค้นหาสินค้า", icon: Search },
-  { href: "/requisitions/new", label: "เบิกสินค้า", icon: PackageMinus },
-  { href: "/requisitions", label: "แจ้งคืนสินค้า", icon: Undo2 },
-  { href: "/requisitions", label: "ประวัติของฉัน", icon: History },
-];
+import { formatDate } from "@/lib/format";
+import { interpolate } from "@/lib/i18n/get-dictionary";
 
 export async function UserDashboard({
   orgId,
   userId,
+  dict,
+  locale,
 }: {
   orgId: string;
   userId: string;
+  dict: Dictionary;
+  locale: Locale;
 }) {
   const data = await getUserDashboard(orgId, userId);
+  const t = dict.dashboard.user;
+
+  const quickLinks: { href: string; label: string; icon: LucideIcon }[] = [
+    { href: "/products", label: t.searchProducts, icon: Search },
+    { href: "/requisitions/new", label: t.requestItem, icon: PackageMinus },
+    { href: "/requisitions", label: t.reportReturn, icon: Undo2 },
+    { href: "/requisitions", label: t.myHistory, icon: History },
+  ];
 
   return (
     <>
-      <PageHeader title="ภาพรวมของฉัน" description="สรุปรายการเบิกสินค้าของคุณ" />
+      <PageHeader title={t.title} description={t.description} />
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
-          title="รายการเบิกทั้งหมด"
+          title={t.totalRequisitions}
           value={data.total}
-          suffix="รายการ"
+          suffix={t.items}
           icon={ClipboardList}
           tone="blue"
         />
         <StatCard
-          title="รอการอนุมัติ"
+          title={t.pending}
           value={data.pending}
-          suffix="รายการ"
+          suffix={t.items}
           icon={Clock}
           tone="amber"
         />
         <StatCard
-          title="เบิกแล้ว"
+          title={t.approved}
           value={data.approved}
-          suffix="รายการ"
+          suffix={t.items}
           icon={PackageCheck}
           tone="green"
         />
         <StatCard
-          title="คืนสินค้าแล้ว"
+          title={t.returned}
           value={data.returned}
-          suffix="รายการ"
+          suffix={t.items}
           icon={Undo2}
           tone="violet"
         />
@@ -68,20 +76,20 @@ export async function UserDashboard({
       <div className="mt-4 grid gap-4 xl:grid-cols-3">
         <Card className="xl:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-base">รายการเบิกล่าสุด</CardTitle>
+            <CardTitle className="text-base">{t.recentTitle}</CardTitle>
             <Link
               href="/requisitions"
               className="text-xs text-muted-foreground underline-offset-4 hover:underline"
             >
-              ดูทั้งหมด
+              {t.viewAll}
             </Link>
           </CardHeader>
           <CardContent>
             {data.recent.length === 0 ? (
               <p className="py-8 text-center text-sm text-muted-foreground">
-                ยังไม่มีรายการเบิก —{" "}
+                {t.noRequisitionsYet}{" "}
                 <Link href="/requisitions/new" className="underline underline-offset-4">
-                  เริ่มเบิกสินค้า
+                  {t.startRequesting}
                 </Link>
               </p>
             ) : (
@@ -95,13 +103,18 @@ export async function UserDashboard({
                       <span className="font-mono text-xs text-muted-foreground">
                         {req.reqNumber}
                       </span>
-                      <span className="truncate">{req.summary}</span>
+                      <span className="truncate">
+                        {req.firstItemLabel}
+                        {req.extraItemCount > 0
+                          ? ` ${interpolate(dict.requisitions.itemsMore, { count: req.extraItemCount })}`
+                          : ""}
+                      </span>
                     </span>
                     <span className="flex shrink-0 items-center gap-3">
                       <span className="text-xs text-muted-foreground">
-                        {formatDateThai(req.createdAt)}
+                        {formatDate(req.createdAt, locale)}
                       </span>
-                      <RequisitionStatusBadge status={req.status} />
+                      <RequisitionStatusBadge status={req.status} dict={dict} />
                     </span>
                   </li>
                 ))}
@@ -111,7 +124,7 @@ export async function UserDashboard({
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">เมนูด่วน</CardTitle>
+            <CardTitle className="text-base">{t.quickMenu}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-2">

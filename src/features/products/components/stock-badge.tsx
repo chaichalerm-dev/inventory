@@ -4,9 +4,17 @@ type StockBadgeProps = {
   quantity: number;
   minStock: number;
   unit: string;
+  outOfStockLabel: string;
+  lowLabel: string;
 };
 
-export function StockBadge({ quantity, minStock, unit }: StockBadgeProps) {
+export function StockBadge({
+  quantity,
+  minStock,
+  unit,
+  outOfStockLabel,
+  lowLabel,
+}: StockBadgeProps) {
   const isOut = quantity <= 0;
   const isLow = !isOut && quantity <= minStock;
 
@@ -15,10 +23,10 @@ export function StockBadge({ quantity, minStock, unit }: StockBadgeProps) {
       <span className="tabular-nums">
         {quantity.toLocaleString()} {unit}
       </span>
-      {isOut ? <Badge variant="destructive">Out of stock</Badge> : null}
+      {isOut ? <Badge variant="destructive">{outOfStockLabel}</Badge> : null}
       {isLow ? (
         <Badge variant="outline" className="border-amber-500 text-amber-600 dark:text-amber-400">
-          Low
+          {lowLabel}
         </Badge>
       ) : null}
     </span>

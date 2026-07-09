@@ -10,6 +10,7 @@ import { ProductRowActions } from "@/features/products/components/product-row-ac
 import { StockBadge } from "@/features/products/components/stock-badge";
 import { DataTable } from "@/components/shared/data-table";
 import { formatMoney } from "@/lib/format";
+import { useLanguage } from "@/lib/i18n/language-provider";
 
 type ProductsTableProps = {
   products: ProductRow[];
@@ -18,6 +19,8 @@ type ProductsTableProps = {
 };
 
 export function ProductsTable({ products, categories, isAdmin }: ProductsTableProps) {
+  const { dict } = useLanguage();
+  const t = dict.products;
   const [, startTransition] = useTransition();
   const [optimisticProducts, removeProduct] = useOptimistic(
     products,
@@ -31,7 +34,7 @@ export function ProductsTable({ products, categories, isAdmin }: ProductsTablePr
       if (!result.ok) {
         toast.error(result.error);
       } else {
-        toast.success("Product deleted");
+        toast.success(t.productDeleted);
       }
     });
   }
@@ -39,37 +42,39 @@ export function ProductsTable({ products, categories, isAdmin }: ProductsTablePr
   const columns: ColumnDef<ProductRow>[] = [
     {
       accessorKey: "sku",
-      header: "SKU",
+      header: t.columnSku,
       cell: ({ row }) => (
         <span className="font-mono text-xs text-muted-foreground">{row.original.sku}</span>
       ),
     },
     {
       accessorKey: "name",
-      header: "Name",
+      header: t.columnName,
       cell: ({ row }) => <span className="font-medium">{row.original.name}</span>,
     },
     {
       accessorKey: "categoryName",
-      header: "Category",
+      header: t.columnCategory,
       cell: ({ row }) => (
         <span className="text-muted-foreground">{row.original.categoryName ?? "—"}</span>
       ),
     },
     {
       accessorKey: "quantity",
-      header: "Stock",
+      header: t.columnStock,
       cell: ({ row }) => (
         <StockBadge
           quantity={row.original.quantity}
           minStock={row.original.minStock}
           unit={row.original.unit}
+          outOfStockLabel={t.outOfStockBadge}
+          lowLabel={t.lowBadge}
         />
       ),
     },
     {
       accessorKey: "price",
-      header: () => <span className="block text-right">Price</span>,
+      header: () => <span className="block text-right">{t.columnPrice}</span>,
       cell: ({ row }) => (
         <span className="block text-right tabular-nums">{formatMoney(row.original.price)}</span>
       ),
@@ -97,7 +102,7 @@ export function ProductsTable({ products, categories, isAdmin }: ProductsTablePr
       columns={columns}
       data={optimisticProducts}
       filterColumn="name"
-      filterPlaceholder="Filter products…"
+      filterPlaceholder={t.filterPlaceholder}
     />
   );
 }

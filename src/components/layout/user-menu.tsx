@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { useLanguage } from "@/lib/i18n/language-provider";
 
 type UserMenuProps = {
   name: string;
@@ -26,6 +27,7 @@ type UserMenuProps = {
 export function UserMenu({ name, email, roleLabel, avatarUrl }: UserMenuProps) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const { dict } = useLanguage();
 
   function handleSignOut() {
     startTransition(async () => {
@@ -37,7 +39,12 @@ export function UserMenu({ name, email, roleLabel, avatarUrl }: UserMenuProps) {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="rounded-full" aria-label="เมนูผู้ใช้">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="rounded-full"
+            aria-label={dict.nav.userMenu}
+          >
             <Avatar className="size-8">
               {avatarUrl ? <AvatarImage src={avatarUrl} alt={name} /> : null}
               <AvatarFallback>
@@ -56,22 +63,22 @@ export function UserMenu({ name, email, roleLabel, avatarUrl }: UserMenuProps) {
           <DropdownMenuItem asChild>
             <Link href="/profile">
               <UserRound className="size-4" />
-              โปรไฟล์ของฉัน
+              {dict.nav.profile}
             </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={() => setConfirmOpen(true)}>
             <LogOut className="size-4" />
-            ออกจากระบบ
+            {dict.nav.signOut}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
       <ConfirmDialog
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
-        title="ออกจากระบบ?"
-        description="คุณต้องเข้าสู่ระบบใหม่อีกครั้งเพื่อใช้งานต่อ"
-        confirmLabel={isPending ? "กำลังออกจากระบบ…" : "ออกจากระบบ"}
+        title={dict.auth.signOutConfirmTitle}
+        description={dict.auth.signOutConfirmDesc}
+        confirmLabel={isPending ? dict.auth.signingOut : dict.auth.signOutConfirm}
         onConfirm={handleSignOut}
       />
     </>

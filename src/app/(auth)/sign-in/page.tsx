@@ -1,12 +1,17 @@
 import type { Metadata } from "next";
 import { Boxes } from "lucide-react";
 import { getSystemSettings } from "@/features/settings/queries";
+import { getLocale } from "@/lib/i18n/get-locale";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { SignInForm } from "@/features/auth/components/sign-in-form";
 
-export const metadata: Metadata = { title: "เข้าสู่ระบบ" };
+export const metadata: Metadata = { title: "เข้าสู่ระบบ · Sign in" };
 
 export default async function SignInPage() {
-  const { showLoginDemoAccounts } = await getSystemSettings();
+  const [{ showLoginDemoAccounts }, dict] = await Promise.all([
+    getSystemSettings(),
+    getLocale().then(getDictionary),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -16,16 +21,12 @@ export default async function SignInPage() {
             <Boxes className="size-6" aria-hidden="true" />
           </span>
           <div className="text-left">
-            <p className="text-xl font-bold leading-tight">StockPro</p>
-            <p className="text-xs text-muted-foreground">
-              Inventory Management System
-            </p>
+            <p className="text-xl font-bold leading-tight">{dict.common.appName}</p>
+            <p className="text-xs text-muted-foreground">{dict.common.tagline}</p>
           </div>
         </div>
-        <h1 className="text-2xl font-semibold tracking-tight">Welcome Back!</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          เข้าสู่ระบบเพื่อเริ่มใช้งาน
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">{dict.auth.welcomeBack}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{dict.auth.signInSubtitle}</p>
       </div>
 
       <SignInForm showDemoAccounts={showLoginDemoAccounts} />

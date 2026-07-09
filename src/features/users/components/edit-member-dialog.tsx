@@ -11,6 +11,8 @@ import {
   editMemberFormSchema,
   type EditMemberFormInput,
 } from "@/features/users/schemas";
+import { useLanguage } from "@/lib/i18n/language-provider";
+import { interpolate } from "@/lib/i18n/get-dictionary";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -47,19 +49,24 @@ function splitName(fullName: string): { firstName: string; lastName: string } {
 
 export function EditMemberDialog({ member }: { member: MemberRow }) {
   const [open, setOpen] = useState(false);
+  const { dict } = useLanguage();
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label={`แก้ไข ${member.name}`}>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={`${dict.common.edit} ${member.name}`}
+        >
           <Pencil className="size-4" />
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>แก้ไขข้อมูลผู้ใช้งาน</DialogTitle>
+          <DialogTitle>{dict.users.editUserDialogTitle}</DialogTitle>
           <DialogDescription>
-            แก้ไขชื่อ อีเมล หรือตั้งรหัสผ่านใหม่ให้ {member.name}
+            {interpolate(dict.users.editUserDialogDesc, { name: member.name })}
           </DialogDescription>
         </DialogHeader>
         {/* Radix unmounts DialogContent children on close, so this form
@@ -77,6 +84,7 @@ function EditMemberForm({
   member: MemberRow;
   onDone: () => void;
 }) {
+  const { dict } = useLanguage();
   const [isPending, startTransition] = useTransition();
   const [rootError, setRootError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -112,7 +120,7 @@ function EditMemberForm({
         }
         return;
       }
-      toast.success("บันทึกข้อมูลผู้ใช้งานแล้ว");
+      toast.success(dict.users.saveUserSuccess);
       onDone();
     });
   }
@@ -126,7 +134,7 @@ function EditMemberForm({
             name="firstName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>ชื่อ</FormLabel>
+                <FormLabel>{dict.users.firstName}</FormLabel>
                 <FormControl>
                   <Input {...field} />
                 </FormControl>
@@ -139,7 +147,7 @@ function EditMemberForm({
             name="lastName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>นามสกุล</FormLabel>
+                <FormLabel>{dict.users.lastName}</FormLabel>
                 <FormControl>
                   <Input {...field} />
                 </FormControl>
@@ -153,7 +161,7 @@ function EditMemberForm({
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>อีเมล</FormLabel>
+              <FormLabel>{dict.users.email}</FormLabel>
               <FormControl>
                 <Input type="email" autoComplete="email" {...field} />
               </FormControl>
@@ -166,7 +174,7 @@ function EditMemberForm({
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>รหัสผ่านใหม่ (เว้นว่างหากไม่ต้องการเปลี่ยน)</FormLabel>
+              <FormLabel>{dict.users.newPassword}</FormLabel>
               <FormControl>
                 <PasswordInput
                   field={field}
@@ -184,7 +192,7 @@ function EditMemberForm({
           name="confirmPassword"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>ยืนยันรหัสผ่านใหม่</FormLabel>
+              <FormLabel>{dict.users.confirmNewPassword}</FormLabel>
               <FormControl>
                 <PasswordInput
                   field={field}
@@ -202,7 +210,7 @@ function EditMemberForm({
           className="w-full"
           disabled={isPending || !form.formState.isDirty}
         >
-          {isPending ? "กำลังบันทึก…" : "บันทึกการเปลี่ยนแปลง"}
+          {isPending ? dict.common.saving : dict.common.saveChanges}
         </Button>
       </form>
     </Form>
@@ -218,6 +226,7 @@ function PasswordInput({
   visible: boolean;
   onToggleVisible: () => void;
 }) {
+  const { dict } = useLanguage();
   return (
     <div className="relative">
       <Input
@@ -229,7 +238,7 @@ function PasswordInput({
       <button
         type="button"
         onClick={onToggleVisible}
-        aria-label={visible ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
+        aria-label={visible ? dict.auth.hidePassword : dict.auth.showPassword}
         className="absolute inset-y-0 right-0 flex cursor-pointer items-center px-3 text-muted-foreground hover:text-foreground"
       >
         {visible ? (

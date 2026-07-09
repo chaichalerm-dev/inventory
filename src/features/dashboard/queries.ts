@@ -1,9 +1,10 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
 import type { RequisitionStatus } from "@/generated/prisma/enums";
+import type { Locale } from "@/lib/i18n/types";
 
 export type MovementPoint = {
-  /** Preformatted Thai short date, e.g. "1 ก.ค." — the chart is display-only. */
+  /** Preformatted short date in the caller's locale — display-only. */
   label: string;
   in: number;
   out: number;
@@ -26,11 +27,6 @@ export type AdminDashboardData = {
   lowStock: LowStockProduct[];
 };
 
-const dayLabelFormat = new Intl.DateTimeFormat("th-TH", {
-  day: "numeric",
-  month: "short",
-});
-
 // Local-time day key so movements land on the day the user perceives.
 function dayKey(date: Date): string {
   return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
@@ -38,7 +34,12 @@ function dayKey(date: Date): string {
 
 export async function getAdminDashboard(
   orgId: string,
+  locale: Locale,
 ): Promise<AdminDashboardData> {
+  const dayLabelFormat = new Intl.DateTimeFormat(locale === "th" ? "th-TH" : "en-GB", {
+    day: "numeric",
+    month: "short",
+  });
   const since = new Date();
   since.setDate(since.getDate() - 29);
   since.setHours(0, 0, 0, 0);
@@ -116,7 +117,10 @@ export type RecentRequisition = {
   reqNumber: string;
   status: RequisitionStatus;
   createdAt: string;
-  summary: string;
+  /** First item's display label, e.g. "Paper A4 ×5". */
+  firstItemLabel: string;
+  /** Additional items beyond the first, for "+N more" — 0 if only one item. */
+  extraItemCount: number;
 };
 
 export type UserDashboardData = {
@@ -156,16 +160,13 @@ export async function getUserDashboard(
     returned: count("RETURNED"),
     recent: recentRows.map((r) => {
       const first = r.items[0];
-      const head = first
-        ? `${first.product.name} ×${first.quantity}`
-        : "—";
       return {
         id: r.id,
         reqNumber: r.reqNumber,
         status: r.status,
         createdAt: r.createdAt.toISOString(),
-        summary:
-          r.items.length > 1 ? `${head} +${r.items.length - 1} รายการ` : head,
+        firstItemLabel: first ? `${first.product.name} ×${first.quantity}` : "—",
+        extraItemCount: Math.max(r.items.length - 1, 0),
       };
     }),
   };

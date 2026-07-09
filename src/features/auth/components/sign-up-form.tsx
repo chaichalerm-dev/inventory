@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signUpAction } from "@/features/auth/actions";
 import { signUpSchema, type SignUpInput } from "@/features/auth/schemas";
+import { useLanguage } from "@/lib/i18n/language-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -17,24 +18,24 @@ import {
 } from "@/components/ui/form";
 import { FormRootError } from "@/components/shared/form-root-error";
 
-const fields = [
-  { name: "name", label: "Your name", type: "text", autoComplete: "name" },
-  {
-    name: "organizationName",
-    label: "Organization name",
-    type: "text",
-    autoComplete: "organization",
-  },
-  { name: "email", label: "Email", type: "email", autoComplete: "email" },
-  {
-    name: "password",
-    label: "Password",
-    type: "password",
-    autoComplete: "new-password",
-  },
-] as const;
-
 export function SignUpForm() {
+  const { dict } = useLanguage();
+  const fields = [
+    { name: "name", label: dict.auth.yourName, type: "text", autoComplete: "name" },
+    {
+      name: "organizationName",
+      label: dict.auth.organizationName,
+      type: "text",
+      autoComplete: "organization",
+    },
+    { name: "email", label: dict.auth.email, type: "email", autoComplete: "email" },
+    {
+      name: "password",
+      label: dict.auth.password,
+      type: "password",
+      autoComplete: "new-password",
+    },
+  ] as const;
   const [isPending, startTransition] = useTransition();
   const [rootError, setRootError] = useState<string | null>(null);
 
@@ -72,7 +73,7 @@ export function SignUpForm() {
         ))}
         <FormRootError message={rootError} />
         <Button type="submit" className="w-full" disabled={isPending}>
-          {isPending ? "Creating account…" : "Create account"}
+          {isPending ? dict.auth.creatingAccount : dict.auth.createAccount}
         </Button>
       </form>
     </Form>

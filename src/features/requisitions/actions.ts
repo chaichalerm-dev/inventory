@@ -6,6 +6,8 @@ import { isDbUnavailableError, prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/session";
 import { isAdminRole } from "@/lib/roles";
 import { fail, ok, type ActionResult } from "@/lib/action-result";
+import { getLocale } from "@/lib/i18n/get-locale";
+import { getDictionary, interpolate } from "@/lib/i18n/get-dictionary";
 import {
   requisitionSchema,
   type RequisitionInput,
@@ -24,10 +26,12 @@ function revalidateStockViews() {
 export async function createRequisitionAction(
   input: RequisitionInput,
 ): Promise<ActionResult> {
+  const dict = getDictionary(await getLocale());
+  const t = dict.requisitions;
   const { orgId, userId } = await requireSession();
   const parsed = requisitionSchema.safeParse(input);
   if (!parsed.success) {
-    return fail("ข้อมูลไม่ถูกต้อง", parsed.error.flatten().fieldErrors);
+    return fail(dict.auth.invalidInput, parsed.error.flatten().fieldErrors);
   }
 
   // Merge duplicate product rows so the unique(requisitionId, productId)
@@ -46,14 +50,18 @@ export async function createRequisitionAction(
     select: { id: true, name: true, quantity: true },
   });
   if (products.length !== merged.size) {
-    return fail("มีสินค้าที่ไม่พบในระบบ กรุณาลองใหม่อีกครั้ง");
+    return fail(t.someProductsMissing);
   }
   // Soft check at request time — the authoritative check runs at approval.
   for (const product of products) {
     const requested = merged.get(product.id)!;
     if (requested > product.quantity) {
       return fail(
-        `"${product.name}" คงเหลือ ${product.quantity} ไม่พอสำหรับจำนวนที่ขอเบิก (${requested})`,
+        interpolate(t.insufficientStockAtRequest, {
+          name: product.name,
+          available: product.quantity,
+          requested,
+        }),
       );
     }
   }
@@ -86,10 +94,10 @@ export async function createRequisitionAction(
       error instanceof Prisma.PrismaClientKnownRequestError &&
       error.code === "P2002"
     ) {
-      return fail("เกิดข้อผิดพลาดชั่วคราว กรุณากดบันทึกอีกครั้ง");
+      return fail(t.duplicateSubmit);
     }
     if (isDbUnavailableError(error)) {
-      return fail("ระบบทำงานช้าในขณะนี้ กรุณาลองใหม่อีกครั้ง");
+      return fail(dict.auth.dbSlow);
     }
     throw error;
   }
@@ -99,8 +107,10 @@ export async function createRequisitionAction(
 }
 
 export async function approveRequisitionAction(id: string): Promise<ActionResult> {
+  const dict = getDictionary(await getLocale());
+  const t = dict.requisitions;
   const { orgId, userId, role } = await requireSession();
-  if (!isAdminRole(role)) return fail("เฉพาะผู้ดูแลระบบเท่านั้น");
+  if (!isAdminRole(role)) return fail(t.adminOnly);
 
   try {
     await prisma.$transaction(async (tx) => {
@@ -114,14 +124,17 @@ export async function approveRequisitionAction(id: string): Promise<ActionResult
           },
         },
       });
-      if (!requisition) throw new RequisitionError("ไม่พบรายการเบิก");
+      if (!requisition) throw new RequisitionError(t.notFound);
       if (requisition.status !== "PENDING") {
-        throw new RequisitionError("รายการนี้ถูกดำเนินการไปแล้ว");
+        throw new RequisitionError(t.alreadyProcessed);
       }
       for (const item of requisition.items) {
         if (item.quantity > item.product.quantity) {
           throw new RequisitionError(
-            `สต็อก "${item.product.name}" ไม่พอ (คงเหลือ ${item.product.quantity})`,
+            interpolate(t.insufficientStockAtApprove, {
+              name: item.product.name,
+              available: item.product.quantity,
+            }),
           );
         }
       }
@@ -137,7 +150,7 @@ export async function approveRequisitionAction(id: string): Promise<ActionResult
             createdById: userId,
             type: "OUT",
             delta: -item.quantity,
-            note: `เบิกสินค้า ${requisition.reqNumber}`,
+            note: interpolate(t.stockNoteOut, { reqNumber: requisition.reqNumber }),
             referenceId: requisition.id,
           },
         });
@@ -150,7 +163,7 @@ export async function approveRequisitionAction(id: string): Promise<ActionResult
   } catch (error) {
     if (error instanceof RequisitionError) return fail(error.message);
     if (isDbUnavailableError(error)) {
-      return fail("ระบบทำงานช้าในขณะนี้ กรุณาลองใหม่อีกครั้ง");
+      return fail(dict.auth.dbSlow);
     }
     throw error;
   }
@@ -160,20 +173,23 @@ export async function approveRequisitionAction(id: string): Promise<ActionResult
 }
 
 export async function rejectRequisitionAction(id: string): Promise<ActionResult> {
+  const dict = getDictionary(await getLocale());
+  const t = dict.requisitions;
   const { orgId, userId, role } = await requireSession();
-  if (!isAdminRole(role)) return fail("เฉพาะผู้ดูแลระบบเท่านั้น");
+  if (!isAdminRole(role)) return fail(t.adminOnly);
 
   const { count } = await prisma.requisition.updateMany({
     where: { id, organizationId: orgId, status: "PENDING" },
     data: { status: "REJECTED", decidedById: userId, decidedAt: new Date() },
   });
-  if (count === 0) return fail("ไม่พบรายการ หรือรายการถูกดำเนินการไปแล้ว");
+  if (count === 0) return fail(t.notFoundOrProcessed);
 
   revalidateStockViews();
   return ok();
 }
 
 export async function requestReturnAction(id: string): Promise<ActionResult> {
+  const dict = getDictionary(await getLocale());
   const { orgId, userId } = await requireSession();
 
   // Only the requester of an approved requisition can flag a return.
@@ -186,15 +202,17 @@ export async function requestReturnAction(id: string): Promise<ActionResult> {
     },
     data: { status: "RETURN_REQUESTED" },
   });
-  if (count === 0) return fail("ไม่สามารถแจ้งคืนรายการนี้ได้");
+  if (count === 0) return fail(dict.requisitions.cannotReturn);
 
   revalidateStockViews();
   return ok();
 }
 
 export async function confirmReturnAction(id: string): Promise<ActionResult> {
+  const dict = getDictionary(await getLocale());
+  const t = dict.requisitions;
   const { orgId, userId, role } = await requireSession();
-  if (!isAdminRole(role)) return fail("เฉพาะผู้ดูแลระบบเท่านั้น");
+  if (!isAdminRole(role)) return fail(t.adminOnly);
 
   try {
     await prisma.$transaction(async (tx) => {
@@ -202,9 +220,9 @@ export async function confirmReturnAction(id: string): Promise<ActionResult> {
         where: { id, organizationId: orgId },
         include: { items: true },
       });
-      if (!requisition) throw new RequisitionError("ไม่พบรายการเบิก");
+      if (!requisition) throw new RequisitionError(t.notFound);
       if (requisition.status !== "RETURN_REQUESTED") {
-        throw new RequisitionError("รายการนี้ไม่ได้อยู่ในสถานะรอรับคืน");
+        throw new RequisitionError(t.notReturnPending);
       }
       for (const item of requisition.items) {
         await tx.product.update({
@@ -218,7 +236,7 @@ export async function confirmReturnAction(id: string): Promise<ActionResult> {
             createdById: userId,
             type: "IN",
             delta: item.quantity,
-            note: `รับคืนสินค้า ${requisition.reqNumber}`,
+            note: interpolate(t.stockNoteIn, { reqNumber: requisition.reqNumber }),
             referenceId: requisition.id,
           },
         });
@@ -231,7 +249,7 @@ export async function confirmReturnAction(id: string): Promise<ActionResult> {
   } catch (error) {
     if (error instanceof RequisitionError) return fail(error.message);
     if (isDbUnavailableError(error)) {
-      return fail("ระบบทำงานช้าในขณะนี้ กรุณาลองใหม่อีกครั้ง");
+      return fail(dict.auth.dbSlow);
     }
     throw error;
   }
