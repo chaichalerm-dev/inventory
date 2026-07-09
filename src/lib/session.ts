@@ -2,6 +2,7 @@ import "server-only";
 import { redirect } from "next/navigation";
 import type { MembershipRole } from "@/generated/prisma/enums";
 import { auth } from "@/lib/auth";
+import { isAdminRole } from "@/lib/roles";
 
 export type SessionContext = {
   userId: string;
@@ -24,4 +25,14 @@ export async function requireSession(): Promise<SessionContext> {
     orgId: session.user.orgId,
     role: session.user.role,
   };
+}
+
+/**
+ * Gate for admin-only pages. Members are sent back to their dashboard
+ * instead of an error page — the nav never links them here anyway.
+ */
+export async function requireAdmin(): Promise<SessionContext> {
+  const ctx = await requireSession();
+  if (!isAdminRole(ctx.role)) redirect("/dashboard");
+  return ctx;
 }

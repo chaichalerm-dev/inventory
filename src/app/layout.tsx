@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Noto_Sans_Thai } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
@@ -13,12 +13,18 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// Thai glyph coverage — Geist has none, so Thai text falls through to this.
+const notoSansThai = Noto_Sans_Thai({
+  variable: "--font-noto-sans-thai",
+  subsets: ["thai"],
+});
+
 export const metadata: Metadata = {
   title: {
-    default: "Inventory",
-    template: "%s · Inventory",
+    default: "StockPro",
+    template: "%s · StockPro",
   },
-  description: "Multi-tenant inventory management.",
+  description: "StockPro — Inventory Management System",
 };
 
 export default function RootLayout({
@@ -28,8 +34,8 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      lang="th"
+      className={`${geistSans.variable} ${geistMono.variable} ${notoSansThai.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         {children}

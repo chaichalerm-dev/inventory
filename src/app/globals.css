@@ -7,7 +7,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-geist-sans), var(--font-noto-sans-thai), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -49,6 +49,9 @@
 }
 
 :root {
+  /* Dashboard chart series — validated palette (dataviz slots 1–2). */
+  --viz-in: #2a78d6;
+  --viz-out: #1baf7a;
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
@@ -84,6 +87,9 @@
 }
 
 .dark {
+  /* Same chart hues re-stepped for the dark surface (validated separately). */
+  --viz-in: #3987e5;
+  --viz-out: #199e70;
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
