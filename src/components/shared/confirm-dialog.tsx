@@ -10,6 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { cn } from "@/lib/utils";
 
 type ConfirmDialogProps = {
   open: boolean;
@@ -17,6 +18,8 @@ type ConfirmDialogProps = {
   title: string;
   description: string;
   confirmLabel?: string;
+  /** Destructive styles the confirm button red; default keeps the primary look. */
+  variant?: "destructive" | "default";
   onConfirm: () => void;
 };
 
@@ -25,7 +28,8 @@ export function ConfirmDialog({
   onOpenChange,
   title,
   description,
-  confirmLabel = "Delete",
+  confirmLabel = "ยืนยัน",
+  variant = "destructive",
   onConfirm,
 }: ConfirmDialogProps) {
   return (
@@ -36,10 +40,13 @@ export function ConfirmDialog({
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
-            className="bg-destructive text-white hover:bg-destructive/90"
+            className={cn(
+              variant === "destructive" &&
+                "bg-destructive text-white hover:bg-destructive/90",
+            )}
           >
             {confirmLabel}
           </AlertDialogAction>
