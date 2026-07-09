@@ -3,7 +3,7 @@
 import { hash } from "bcryptjs";
 import { AuthError } from "next-auth";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
-import { signIn, signOut } from "@/lib/auth";
+import { signIn, signOut, verifyCredentials } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { uniqueSlug } from "@/lib/slug";
 import { isAdminRole } from "@/lib/roles";
@@ -59,20 +59,19 @@ export async function signInAction(
   }
   const { portal, email, password } = parsed.data;
 
-  // Enforce the tab choice: an employee cannot enter through Admin Login and
-  // vice versa. Checked before signIn because a successful signIn redirects.
-  const user = await prisma.user.findUnique({
-    where: { email },
-    select: { memberships: { take: 1, select: { role: true } } },
-  });
-  const role = user?.memberships[0]?.role;
-  if (role) {
-    if (portal === "ADMIN" && !isAdminRole(role)) {
-      return fail("บัญชีนี้เป็นบัญชีพนักงาน กรุณาเข้าสู่ระบบผ่านแท็บ User Login");
-    }
-    if (portal === "USER" && isAdminRole(role)) {
-      return fail("บัญชีนี้เป็นผู้ดูแลระบบ กรุณาเข้าสู่ระบบผ่านแท็บ Admin Login");
-    }
+  // Verify the password before ever looking at role. Checking role first
+  // (e.g. to validate the tab choice) would let anyone submit a real email
+  // with a wrong password and learn whether that account exists and
+  // whether it's an admin — without ever proving they know the password.
+  const verified = await verifyCredentials(email, password);
+  if (!verified) {
+    return fail("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
+  }
+  if (portal === "ADMIN" && !isAdminRole(verified.role)) {
+    return fail("บัญชีนี้เป็นบัญชีพนักงาน กรุณาเข้าสู่ระบบผ่านแท็บ User Login");
+  }
+  if (portal === "USER" && isAdminRole(verified.role)) {
+    return fail("บัญชีนี้เป็นผู้ดูแลระบบ กรุณาเข้าสู่ระบบผ่านแท็บ Admin Login");
   }
 
   return signInWithCredentials({ email, password });

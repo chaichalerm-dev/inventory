@@ -70,6 +70,16 @@ src/lib/                  cross-cutting infra: prisma client, auth.ts, session.t
   `throw` for genuinely unexpected states (a caught error you don't have a
   recovery message for) — see the `RequisitionError` pattern for turning an
   in-transaction failure into a user-facing message without leaking a raw 500.
+- **Never reveal account/role information before a password is verified.**
+  `signInAction` used to look up an email's role first to validate the login
+  tab choice, which let anyone submit a real email with a wrong password and
+  learn whether the account exists and whether it's an admin — no valid
+  credentials required. `verifyCredentials()` in `src/lib/auth.ts` is now the
+  single place that checks a password; it's used by both NextAuth's
+  `authorize()` and `signInAction`, and role/account-existence must never be
+  branched on before it returns a match. Apply the same rule to any future
+  check that depends on "does this email/account have property X" — verify
+  the password first, always.
 
 ## Language & UI conventions
 
