@@ -3,11 +3,14 @@
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Pencil } from "lucide-react";
+import { Eye, EyeOff, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import type { MemberRow } from "@/features/users/queries";
 import { updateMemberAction } from "@/features/users/actions";
-import { updateMemberSchema, type UpdateMemberInput } from "@/features/users/schemas";
+import {
+  editMemberFormSchema,
+  type EditMemberFormInput,
+} from "@/features/users/schemas";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -27,6 +30,20 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { FormRootError } from "@/components/shared/form-root-error";
+import { PasswordStrengthMeter } from "@/components/shared/password-strength-meter";
+
+// The database stores one `name` field — split naively on the first space
+// so "สมชาย ใจดี" becomes ชื่อ="สมชาย" นามสกุล="ใจดี". A one-word name
+// (no space) lands entirely in ชื่อ, leaving นามสกุล for the admin to fill.
+function splitName(fullName: string): { firstName: string; lastName: string } {
+  const trimmed = fullName.trim();
+  const spaceIndex = trimmed.indexOf(" ");
+  if (spaceIndex === -1) return { firstName: trimmed, lastName: "" };
+  return {
+    firstName: trimmed.slice(0, spaceIndex),
+    lastName: trimmed.slice(spaceIndex + 1).trim(),
+  };
+}
 
 export function EditMemberDialog({ member }: { member: MemberRow }) {
   const [open, setOpen] = useState(false);
@@ -62,16 +79,25 @@ function EditMemberForm({
 }) {
   const [isPending, startTransition] = useTransition();
   const [rootError, setRootError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
-  const form = useForm<UpdateMemberInput>({
-    resolver: zodResolver(updateMemberSchema),
-    defaultValues: { name: member.name, email: member.email, password: "" },
+  const { firstName, lastName } = splitName(member.name);
+  const form = useForm<EditMemberFormInput>({
+    resolver: zodResolver(editMemberFormSchema),
+    defaultValues: { firstName, lastName, email: member.email, password: "" },
   });
 
-  function onSubmit(values: UpdateMemberInput) {
+  const password = form.watch("password");
+
+  function onSubmit(values: EditMemberFormInput) {
     setRootError(null);
+    const name = `${values.firstName.trim()} ${values.lastName.trim()}`.trim();
     startTransition(async () => {
-      const result = await updateMemberAction(member.membershipId, values);
+      const result = await updateMemberAction(member.membershipId, {
+        name,
+        email: values.email,
+        password: values.password,
+      });
       if (!result.ok) {
         setRootError(result.error);
         if (result.fieldErrors?.email?.[0]) {
@@ -87,19 +113,34 @@ function EditMemberForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" noValidate>
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>ชื่อ-นามสกุล</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="firstName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>ชื่อ</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="lastName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>นามสกุล</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
         <FormField
           control={form.control}
           name="email"
@@ -120,14 +161,38 @@ function EditMemberForm({
             <FormItem>
               <FormLabel>รหัสผ่านใหม่ (เว้นว่างหากไม่ต้องการเปลี่ยน)</FormLabel>
               <FormControl>
-                <Input type="text" autoComplete="off" {...field} />
+                <div className="relative">
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="new-password"
+                    className="pr-10"
+                    {...field}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    aria-label={showPassword ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
+                    className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="size-4" aria-hidden="true" />
+                    ) : (
+                      <Eye className="size-4" aria-hidden="true" />
+                    )}
+                  </button>
+                </div>
               </FormControl>
+              <PasswordStrengthMeter password={password} />
               <FormMessage />
             </FormItem>
           )}
         />
         <FormRootError message={rootError} />
-        <Button type="submit" className="w-full" disabled={isPending}>
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={isPending || !form.formState.isDirty}
+        >
           {isPending ? "กำลังบันทึก…" : "บันทึกการเปลี่ยนแปลง"}
         </Button>
       </form>

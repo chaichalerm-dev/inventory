@@ -21,6 +21,20 @@ export const updateMemberSchema = z.object({
     .refine((v) => v === "" || v.length >= 8, "รหัสผ่านต้องยาวอย่างน้อย 8 ตัวอักษร"),
 });
 
+// Client-side only shape for the edit dialog: the database stores one
+// `name` field, but the form splits it into ชื่อ/นามสกุล for editing —
+// EditMemberDialog joins them back into `name` before calling the server
+// action, which still validates against updateMemberSchema above.
+export const editMemberFormSchema = z.object({
+  firstName: z.string().min(1, "กรุณากรอกชื่อ").max(50),
+  lastName: z.string().min(1, "กรุณากรอกนามสกุล").max(50),
+  email: z.string().email("กรุณากรอกอีเมลให้ถูกต้อง"),
+  password: z
+    .union([z.literal(""), z.string().min(8).max(72)])
+    .refine((v) => v === "" || v.length >= 8, "รหัสผ่านต้องยาวอย่างน้อย 8 ตัวอักษร"),
+});
+
 export type InviteUserInput = z.infer<typeof inviteUserSchema>;
 export type UpdateMemberInput = z.infer<typeof updateMemberSchema>;
+export type EditMemberFormInput = z.infer<typeof editMemberFormSchema>;
 export type AssignableRole = z.infer<typeof assignableRoleSchema>;
