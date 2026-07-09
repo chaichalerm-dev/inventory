@@ -2,16 +2,28 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import type { MembershipRole } from "@/generated/prisma/enums";
 import { cn } from "@/lib/utils";
-import { navItems } from "@/config/nav";
+import { navItemsForRole } from "@/config/nav";
 
-export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
+// Receives the role (a plain string) instead of nav items because icon
+// components cannot cross the server → client boundary as props.
+export function SidebarNav({
+  role,
+  onNavigate,
+}: {
+  role: MembershipRole;
+  onNavigate?: () => void;
+}) {
   const pathname = usePathname();
+  const items = navItemsForRole(role);
 
   return (
-    <nav aria-label="Main navigation" className="flex flex-col gap-1 p-2">
-      {navItems.map(({ href, label, icon: Icon }) => {
-        const isActive = pathname.startsWith(href);
+    <nav aria-label="เมนูหลัก" className="flex flex-col gap-1 p-2">
+      {items.map(({ href, label, icon: Icon, exact }) => {
+        const isActive = exact
+          ? pathname === href
+          : pathname === href || pathname.startsWith(`${href}/`);
         return (
           <Link
             key={href}

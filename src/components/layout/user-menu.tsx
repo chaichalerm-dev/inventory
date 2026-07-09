@@ -16,9 +16,10 @@ import {
 type UserMenuProps = {
   name: string;
   email: string;
+  roleLabel: string;
 };
 
-export function UserMenu({ name, email }: UserMenuProps) {
+export function UserMenu({ name, email, roleLabel }: UserMenuProps) {
   const initials = name
     .split(" ")
     .map((part) => part[0])
@@ -29,7 +30,7 @@ export function UserMenu({ name, email }: UserMenuProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="rounded-full" aria-label="Open user menu">
+        <Button variant="ghost" size="icon" className="rounded-full" aria-label="เมนูผู้ใช้">
           <Avatar className="size-8">
             <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
@@ -39,11 +40,12 @@ export function UserMenu({ name, email }: UserMenuProps) {
         <DropdownMenuLabel>
           <p className="text-sm font-medium">{name}</p>
           <p className="text-xs font-normal text-muted-foreground">{email}</p>
+          <p className="mt-1 text-xs font-normal text-muted-foreground">{roleLabel}</p>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={() => signOutAction()}>
           <LogOut className="size-4" />
-          Sign out
+          ออกจากระบบ
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
