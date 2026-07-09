@@ -3,7 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, ShieldCheck, UserRound } from "lucide-react";
+import { Eye, EyeOff, PlayCircle, ShieldCheck, UserRound } from "lucide-react";
 import { toast } from "sonner";
 import { signInAction } from "@/features/auth/actions";
 import { signInSchema, type Portal, type SignInInput } from "@/features/auth/schemas";
@@ -23,6 +23,28 @@ import {
 import { FormRootError } from "@/components/shared/form-root-error";
 
 const REMEMBER_EMAIL_KEY = "stockpro.remembered-email";
+
+// Public demo credentials — this project is set up for people to try live,
+// so the accounts are meant to be shown on the sign-in screen itself.
+const DEMO_ACCOUNTS: {
+  portal: Portal;
+  label: string;
+  email: string;
+  password: string;
+}[] = [
+  {
+    portal: "ADMIN",
+    label: "ผู้ดูแลระบบ (Admin)",
+    email: "admin@stockpro.test",
+    password: "Demo@1234",
+  },
+  {
+    portal: "USER",
+    label: "พนักงาน (User)",
+    email: "user@stockpro.test",
+    password: "Demo@1234",
+  },
+];
 
 export function SignInForm() {
   const [isPending, startTransition] = useTransition();
@@ -47,6 +69,13 @@ export function SignInForm() {
       setRememberEmail(true);
     }
   }, [form]);
+
+  function fillDemoAccount(account: (typeof DEMO_ACCOUNTS)[number]) {
+    setPortal(account.portal);
+    form.setValue("email", account.email);
+    form.setValue("password", account.password);
+    setRootError(null);
+  }
 
   function onSubmit(values: SignInInput) {
     setRootError(null);
@@ -75,6 +104,36 @@ export function SignInForm() {
           </TabsTrigger>
         </TabsList>
       </Tabs>
+
+      <div className="rounded-md border border-dashed bg-muted/40 p-3">
+        <p className="mb-2 text-xs font-medium text-muted-foreground">
+          บัญชีทดลองใช้งาน (Demo)
+        </p>
+        <div className="space-y-2">
+          {DEMO_ACCOUNTS.map((account) => (
+            <div
+              key={account.portal}
+              className="flex flex-wrap items-center justify-between gap-2 text-xs"
+            >
+              <span className="text-muted-foreground">
+                <span className="font-medium text-foreground">{account.label}</span>
+                {" — "}
+                {account.email} / {account.password}
+              </span>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-7"
+                onClick={() => fillDemoAccount(account)}
+              >
+                <PlayCircle className="size-3.5" aria-hidden="true" />
+                ใช้บัญชีนี้
+              </Button>
+            </div>
+          ))}
+        </div>
+      </div>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" noValidate>
