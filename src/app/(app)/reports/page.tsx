@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { requireAdmin } from "@/lib/session";
 import { ComingSoon } from "@/components/shared/coming-soon";
 
-export const metadata: Metadata = { title: "Reports" };
+export const metadata: Metadata = { title: "รายงาน" };
 
-export default function ReportsPage() {
-  return <ComingSoon title="Reports" milestone="milestone 3" />;
+export default async function ReportsPage() {
+  await requireAdmin();
+  return <ComingSoon title="รายงาน" milestone="milestone 3" />;
 }

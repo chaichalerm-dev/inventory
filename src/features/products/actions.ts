@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
-import { requireSession } from "@/lib/session";
+import { requireAdmin } from "@/lib/session";
 import { fail, ok, type ActionResult } from "@/lib/action-result";
 import {
   NO_CATEGORY,
@@ -36,7 +36,7 @@ async function toData(orgId: string, input: ProductInput) {
 export async function createProductAction(
   input: ProductInput,
 ): Promise<ActionResult> {
-  const { orgId } = await requireSession();
+  const { orgId } = await requireAdmin();
   const parsed = productSchema.safeParse(input);
   if (!parsed.success) {
     return fail("Invalid input", parsed.error.flatten().fieldErrors);
@@ -64,7 +64,7 @@ export async function updateProductAction(
   id: string,
   input: ProductInput,
 ): Promise<ActionResult> {
-  const { orgId } = await requireSession();
+  const { orgId } = await requireAdmin();
   const parsed = productSchema.safeParse(input);
   if (!parsed.success) {
     return fail("Invalid input", parsed.error.flatten().fieldErrors);
@@ -93,7 +93,7 @@ export async function updateProductAction(
 }
 
 export async function deleteProductAction(id: string): Promise<ActionResult> {
-  const { orgId } = await requireSession();
+  const { orgId } = await requireAdmin();
 
   try {
     const { count } = await prisma.product.deleteMany({

@@ -14,9 +14,10 @@ import { formatMoney } from "@/lib/format";
 type ProductsTableProps = {
   products: ProductRow[];
   categories: CategoryRow[];
+  isAdmin: boolean;
 };
 
-export function ProductsTable({ products, categories }: ProductsTableProps) {
+export function ProductsTable({ products, categories, isAdmin }: ProductsTableProps) {
   const [, startTransition] = useTransition();
   const [optimisticProducts, removeProduct] = useOptimistic(
     products,
@@ -73,18 +74,22 @@ export function ProductsTable({ products, categories }: ProductsTableProps) {
         <span className="block text-right tabular-nums">{formatMoney(row.original.price)}</span>
       ),
     },
-    {
-      id: "actions",
-      cell: ({ row }) => (
-        <div className="text-right">
-          <ProductRowActions
-            product={row.original}
-            categories={categories}
-            onDelete={handleDelete}
-          />
-        </div>
-      ),
-    },
+    ...(isAdmin
+      ? ([
+          {
+            id: "actions",
+            cell: ({ row }) => (
+              <div className="text-right">
+                <ProductRowActions
+                  product={row.original}
+                  categories={categories}
+                  onDelete={handleDelete}
+                />
+              </div>
+            ),
+          },
+        ] satisfies ColumnDef<ProductRow>[])
+      : []),
   ];
 
   return (
