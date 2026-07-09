@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { Prisma } from "@/generated/prisma/client";
-import { prisma } from "@/lib/prisma";
+import { isDbUnavailableError, prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/session";
 import { isAdminRole } from "@/lib/roles";
 import { fail, ok, type ActionResult } from "@/lib/action-result";
@@ -13,14 +13,6 @@ import {
 
 // Thrown inside transactions to abort with a user-facing message.
 class RequisitionError extends Error {}
-
-// The pooled connection can be slow to hand out a transaction slot under
-// load; surface this as a retryable message instead of a generic 500.
-function isTransactionTimeout(error: unknown): boolean {
-  return (
-    error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2028"
-  );
-}
 
 function revalidateStockViews() {
   revalidatePath("/requisitions");
@@ -96,7 +88,7 @@ export async function createRequisitionAction(
     ) {
       return fail("เกิดข้อผิดพลาดชั่วคราว กรุณากดบันทึกอีกครั้ง");
     }
-    if (isTransactionTimeout(error)) {
+    if (isDbUnavailableError(error)) {
       return fail("ระบบทำงานช้าในขณะนี้ กรุณาลองใหม่อีกครั้ง");
     }
     throw error;
@@ -157,7 +149,7 @@ export async function approveRequisitionAction(id: string): Promise<ActionResult
     });
   } catch (error) {
     if (error instanceof RequisitionError) return fail(error.message);
-    if (isTransactionTimeout(error)) {
+    if (isDbUnavailableError(error)) {
       return fail("ระบบทำงานช้าในขณะนี้ กรุณาลองใหม่อีกครั้ง");
     }
     throw error;
@@ -238,7 +230,7 @@ export async function confirmReturnAction(id: string): Promise<ActionResult> {
     });
   } catch (error) {
     if (error instanceof RequisitionError) return fail(error.message);
-    if (isTransactionTimeout(error)) {
+    if (isDbUnavailableError(error)) {
       return fail("ระบบทำงานช้าในขณะนี้ กรุณาลองใหม่อีกครั้ง");
     }
     throw error;
