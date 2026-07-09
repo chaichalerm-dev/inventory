@@ -29,6 +29,7 @@ model Organization {
   suppliers      Supplier[]
   stockMovements StockMovement[]
   purchaseOrders PurchaseOrder[]
+  requisitions   Requisition[]
 
   @@map("organizations")
 }
@@ -41,9 +42,11 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  memberships    Membership[]
-  stockMovements StockMovement[]
-  purchaseOrders PurchaseOrder[]
+  memberships           Membership[]
+  stockMovements        StockMovement[]
+  purchaseOrders        PurchaseOrder[]
+  requestedRequisitions Requisition[]   @relation("RequisitionRequester")
+  decidedRequisitions   Requisition[]   @relation("RequisitionDecider")
 
   @@map("users")
 }
@@ -108,6 +111,7 @@ model Product {
   category           Category?           @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   stockMovements     StockMovement[]
   purchaseOrderItems PurchaseOrderItem[]
+  requisitionItems   RequisitionItem[]
 
   @@unique([organizationId, sku])
   @@index([organizationId, isArchived])
@@ -143,6 +147,55 @@ model StockMovement {
   @@index([organizationId, productId, createdAt])
   @@index([organizationId, createdAt])
   @@map("stock_movements")
+}
+
+// ---------- Requisitions (เบิก/คืนสินค้า) ----------
+
+enum RequisitionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  RETURN_REQUESTED
+  RETURNED
+}
+
+model Requisition {
+  id             String            @id @default(cuid())
+  organizationId String
+  requesterId    String
+  decidedById    String?
+  reqNumber      String
+  status         RequisitionStatus @default(PENDING)
+  note           String?
+  // Set when an admin approves/rejects; return flow reuses it for the
+  // return confirmation timestamp via returnedAt below.
+  decidedAt      DateTime?
+  returnedAt     DateTime?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  organization Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  requester    User              @relation("RequisitionRequester", fields: [requesterId], references: [id], onDelete: Restrict)
+  decidedBy    User?             @relation("RequisitionDecider", fields: [decidedById], references: [id], onDelete: Restrict)
+  items        RequisitionItem[]
+
+  @@unique([organizationId, reqNumber])
+  @@index([organizationId, status])
+  @@index([organizationId, requesterId, createdAt])
+  @@map("requisitions")
+}
+
+model RequisitionItem {
+  id            String @id @default(cuid())
+  requisitionId String
+  productId     String
+  quantity      Int
+
+  requisition Requisition @relation(fields: [requisitionId], references: [id], onDelete: Cascade)
+  product     Product     @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@unique([requisitionId, productId])
+  @@map("requisition_items")
 }
 
 // ---------- Purchasing ----------
