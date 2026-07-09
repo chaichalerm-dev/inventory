@@ -123,7 +123,11 @@ function CategoryForm({
           )}
         />
         <FormRootError message={rootError} />
-        <Button type="submit" className="w-full" disabled={isPending}>
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={isPending || (isEdit && !form.formState.isDirty)}
+        >
           {isPending ? "Saving…" : isEdit ? "Save changes" : "Create category"}
         </Button>
       </form>

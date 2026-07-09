@@ -73,7 +73,7 @@ export function OrganizationSettingsForm({
               )}
             />
             <FormRootError message={rootError} />
-            <Button type="submit" disabled={isPending}>
+            <Button type="submit" disabled={isPending || !form.formState.isDirty}>
               {isPending ? "กำลังบันทึก…" : "บันทึกการเปลี่ยนแปลง"}
             </Button>
           </form>
