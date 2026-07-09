@@ -16,10 +16,18 @@ type AppShellProps = {
   roleLabel: string;
   name: string;
   email: string;
+  avatarUrl: string | null;
   children: React.ReactNode;
 };
 
-export function AppShell({ role, roleLabel, name, email, children }: AppShellProps) {
+export function AppShell({
+  role,
+  roleLabel,
+  name,
+  email,
+  avatarUrl,
+  children,
+}: AppShellProps) {
   const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
@@ -85,7 +93,7 @@ export function AppShell({ role, roleLabel, name, email, children }: AppShellPro
         <header className="flex h-14 shrink-0 items-center justify-between gap-2 border-b px-4">
           <MobileNav role={role} />
           <div className="ml-auto">
-            <UserMenu name={name} email={email} roleLabel={roleLabel} />
+            <UserMenu name={name} email={email} roleLabel={roleLabel} avatarUrl={avatarUrl} />
           </div>
         </header>
         <main className="min-h-0 flex-1 overflow-y-auto p-4 md:p-6">
