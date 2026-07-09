@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { EditMemberDialog } from "@/features/users/components/edit-member-dialog";
 
 export function MemberRowActions({
   member,
@@ -27,7 +28,12 @@ export function MemberRowActions({
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   if (member.role === "OWNER") {
-    return <span className="text-sm text-muted-foreground">เจ้าของระบบ</span>;
+    return (
+      <div className="flex items-center justify-end gap-2">
+        <span className="text-sm text-muted-foreground">เจ้าของระบบ</span>
+        <EditMemberDialog member={member} />
+      </div>
+    );
   }
 
   function handleRoleChange(role: AssignableRole) {
@@ -61,6 +67,7 @@ export function MemberRowActions({
           <SelectItem value="ADMIN">ผู้ดูแลระบบ (Admin)</SelectItem>
         </SelectContent>
       </Select>
+      <EditMemberDialog member={member} />
       <Button
         variant="ghost"
         size="icon"
