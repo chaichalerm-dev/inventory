@@ -1,0 +1,84 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
+import { updateOrganizationAction } from "@/features/settings/actions";
+import {
+  organizationSettingsSchema,
+  type OrganizationSettingsInput,
+} from "@/features/settings/schemas";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { FormRootError } from "@/components/shared/form-root-error";
+
+export function OrganizationSettingsForm({
+  organizationName,
+}: {
+  organizationName: string;
+}) {
+  const [isPending, startTransition] = useTransition();
+  const [rootError, setRootError] = useState<string | null>(null);
+
+  const form = useForm<OrganizationSettingsInput>({
+    resolver: zodResolver(organizationSettingsSchema),
+    defaultValues: { name: organizationName },
+  });
+
+  function onSubmit(values: OrganizationSettingsInput) {
+    setRootError(null);
+    startTransition(async () => {
+      const result = await updateOrganizationAction(values);
+      if (!result.ok) {
+        setRootError(result.error);
+        return;
+      }
+      toast.success("บันทึกการตั้งค่าแล้ว");
+    });
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">ข้อมูลองค์กร</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="max-w-sm space-y-4"
+            noValidate
+          >
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>ชื่อองค์กร</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormRootError message={rootError} />
+            <Button type="submit" disabled={isPending}>
+              {isPending ? "กำลังบันทึก…" : "บันทึกการเปลี่ยนแปลง"}
+            </Button>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
+  );
+}
