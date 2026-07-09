@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import { Boxes } from "lucide-react";
+import { getSystemSettings } from "@/features/settings/queries";
 import { SignInForm } from "@/features/auth/components/sign-in-form";
 
 export const metadata: Metadata = { title: "เข้าสู่ระบบ" };
 
-export default function SignInPage() {
+export default async function SignInPage() {
+  const { showLoginDemoAccounts } = await getSystemSettings();
+
   return (
     <div className="space-y-6">
       <div className="text-center">
@@ -25,7 +28,7 @@ export default function SignInPage() {
         </p>
       </div>
 
-      <SignInForm />
+      <SignInForm showDemoAccounts={showLoginDemoAccounts} />
     </div>
   );
 }

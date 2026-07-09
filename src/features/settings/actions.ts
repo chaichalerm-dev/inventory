@@ -6,8 +6,12 @@ import { requireAdmin } from "@/lib/session";
 import { fail, ok, type ActionResult } from "@/lib/action-result";
 import {
   organizationSettingsSchema,
+  systemSettingsSchema,
   type OrganizationSettingsInput,
+  type SystemSettingsInput,
 } from "@/features/settings/schemas";
+
+const SYSTEM_SETTINGS_ID = "global";
 
 export async function updateOrganizationAction(
   input: OrganizationSettingsInput,
@@ -25,5 +29,25 @@ export async function updateOrganizationAction(
 
   revalidatePath("/settings");
   revalidatePath("/dashboard");
+  return ok();
+}
+
+export async function updateSystemSettingsAction(
+  input: SystemSettingsInput,
+): Promise<ActionResult> {
+  await requireAdmin();
+  const parsed = systemSettingsSchema.safeParse(input);
+  if (!parsed.success) {
+    return fail("ข้อมูลไม่ถูกต้อง", parsed.error.flatten().fieldErrors);
+  }
+
+  await prisma.systemSetting.upsert({
+    where: { id: SYSTEM_SETTINGS_ID },
+    create: { id: SYSTEM_SETTINGS_ID, ...parsed.data },
+    update: parsed.data,
+  });
+
+  revalidatePath("/settings");
+  revalidatePath("/sign-in");
   return ok();
 }

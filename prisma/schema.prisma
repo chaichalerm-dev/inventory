@@ -39,6 +39,9 @@ model User {
   name         String
   email        String   @unique
   passwordHash String
+  // Small profile photo stored as a data URL (client-side resized before
+  // upload) — no external object storage is wired up for this project.
+  avatarUrl    String?  @db.Text
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -260,4 +263,17 @@ model PurchaseOrderItem {
 
   @@unique([purchaseOrderId, productId])
   @@map("purchase_order_items")
+}
+
+// ---------- Deployment-wide settings ----------
+
+// Singleton row (always id "global") for settings that apply to the whole
+// deployment rather than one organization — e.g. the public sign-in page is
+// shown before any organization is known, so a per-org flag can't gate it.
+model SystemSetting {
+  id                    String   @id @default("global")
+  showLoginDemoAccounts Boolean  @default(true)
+  updatedAt             DateTime @updatedAt
+
+  @@map("system_settings")
 }

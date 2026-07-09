@@ -62,7 +62,7 @@ const userFeatures = [
   "ดูประวัติของตนเอง",
 ];
 
-export function SignInForm() {
+export function SignInForm({ showDemoAccounts }: { showDemoAccounts: boolean }) {
   const [isPending, startTransition] = useTransition();
   const [rootError, setRootError] = useState<string | null>(null);
   const [portal, setPortal] = useState<Portal>("ADMIN");
@@ -162,7 +162,7 @@ export function SignInForm() {
                           type="button"
                           onClick={() => setShowPassword((v) => !v)}
                           aria-label={showPassword ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
-                          className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
+                          className="absolute inset-y-0 right-0 flex cursor-pointer items-center px-3 text-muted-foreground hover:text-foreground"
                         >
                           {showPassword ? (
                             <EyeOff className="size-4" aria-hidden="true" />
@@ -193,7 +193,7 @@ export function SignInForm() {
                   onClick={() =>
                     toast.info("กรุณาติดต่อผู้ดูแลระบบเพื่อรีเซ็ตรหัสผ่าน")
                   }
-                  className="text-sm text-primary underline-offset-4 hover:underline"
+                  className="cursor-pointer text-sm text-primary underline-offset-4 hover:underline"
                 >
                   ลืมรหัสผ่าน?
                 </button>
@@ -233,7 +233,9 @@ export function SignInForm() {
                   </li>
                 ))}
               </ul>
-              <DemoAccountBox account={ADMIN_DEMO} onUse={fillDemoAccount} />
+              {showDemoAccounts ? (
+                <DemoAccountBox account={ADMIN_DEMO} onUse={fillDemoAccount} />
+              ) : null}
             </div>
             <div className="relative pl-4">
               <Separator orientation="vertical" className="absolute left-0" />
@@ -252,7 +254,9 @@ export function SignInForm() {
                   </li>
                 ))}
               </ul>
-              <DemoAccountBox account={USER_DEMO} onUse={fillDemoAccount} />
+              {showDemoAccounts ? (
+                <DemoAccountBox account={USER_DEMO} onUse={fillDemoAccount} />
+              ) : null}
             </div>
           </div>
         </CardContent>
