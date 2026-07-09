@@ -14,12 +14,14 @@ export default function AppError({
     <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 text-center">
       <AlertTriangle className="size-10 text-destructive" aria-hidden="true" />
       <div>
-        <h2 className="text-lg font-semibold">Something went wrong</h2>
+        <h2 className="text-lg font-semibold">เกิดข้อผิดพลาด</h2>
         <p className="text-sm text-muted-foreground">
-          {error.digest ? `Error reference: ${error.digest}` : "An unexpected error occurred."}
+          {error.digest
+            ? `รหัสอ้างอิงข้อผิดพลาด: ${error.digest}`
+            : "เกิดข้อผิดพลาดที่ไม่คาดคิด กรุณาลองใหม่อีกครั้ง"}
         </p>
       </div>
-      <Button onClick={reset}>Try again</Button>
+      <Button onClick={reset}>ลองใหม่อีกครั้ง</Button>
     </div>
   );
 }
