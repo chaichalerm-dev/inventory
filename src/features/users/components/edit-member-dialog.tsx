@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type ControllerRenderProps } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, Pencil } from "lucide-react";
 import { toast } from "sonner";
@@ -80,11 +80,18 @@ function EditMemberForm({
   const [isPending, startTransition] = useTransition();
   const [rootError, setRootError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const { firstName, lastName } = splitName(member.name);
   const form = useForm<EditMemberFormInput>({
     resolver: zodResolver(editMemberFormSchema),
-    defaultValues: { firstName, lastName, email: member.email, password: "" },
+    defaultValues: {
+      firstName,
+      lastName,
+      email: member.email,
+      password: "",
+      confirmPassword: "",
+    },
   });
 
   const password = form.watch("password");
@@ -161,28 +168,30 @@ function EditMemberForm({
             <FormItem>
               <FormLabel>รหัสผ่านใหม่ (เว้นว่างหากไม่ต้องการเปลี่ยน)</FormLabel>
               <FormControl>
-                <div className="relative">
-                  <Input
-                    type={showPassword ? "text" : "password"}
-                    autoComplete="new-password"
-                    className="pr-10"
-                    {...field}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((v) => !v)}
-                    aria-label={showPassword ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
-                    className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="size-4" aria-hidden="true" />
-                    ) : (
-                      <Eye className="size-4" aria-hidden="true" />
-                    )}
-                  </button>
-                </div>
+                <PasswordInput
+                  field={field}
+                  visible={showPassword}
+                  onToggleVisible={() => setShowPassword((v) => !v)}
+                />
               </FormControl>
               <PasswordStrengthMeter password={password} />
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="confirmPassword"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>ยืนยันรหัสผ่านใหม่</FormLabel>
+              <FormControl>
+                <PasswordInput
+                  field={field}
+                  visible={showConfirmPassword}
+                  onToggleVisible={() => setShowConfirmPassword((v) => !v)}
+                />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
@@ -197,5 +206,38 @@ function EditMemberForm({
         </Button>
       </form>
     </Form>
+  );
+}
+
+function PasswordInput({
+  field,
+  visible,
+  onToggleVisible,
+}: {
+  field: ControllerRenderProps<EditMemberFormInput, "password" | "confirmPassword">;
+  visible: boolean;
+  onToggleVisible: () => void;
+}) {
+  return (
+    <div className="relative">
+      <Input
+        type={visible ? "text" : "password"}
+        autoComplete="new-password"
+        className="pr-10"
+        {...field}
+      />
+      <button
+        type="button"
+        onClick={onToggleVisible}
+        aria-label={visible ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
+        className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
+      >
+        {visible ? (
+          <EyeOff className="size-4" aria-hidden="true" />
+        ) : (
+          <Eye className="size-4" aria-hidden="true" />
+        )}
+      </button>
+    </div>
   );
 }
