@@ -44,7 +44,9 @@ export async function verifyCredentials(
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  session: { strategy: "jwt" },
+  // Sessions expire after 9 hours regardless of activity, so a workstation
+  // left signed in past a shift can't be picked up by someone else later.
+  session: { strategy: "jwt", maxAge: 60 * 60 * 9 },
   pages: { signIn: "/sign-in" },
   logger: {
     error(error) {
