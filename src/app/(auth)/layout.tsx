@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
+import { hasActiveSession } from "@/lib/session";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
 
 export default async function AuthLayout({
@@ -7,8 +7,10 @@ export default async function AuthLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
-  if (session?.user) redirect("/dashboard");
+  // Checks live membership, not just the cookie — a member removed from the
+  // org still holds a decodable JWT, and bouncing them to /dashboard (which
+  // requireSession sends straight back here) would loop forever.
+  if (await hasActiveSession()) redirect("/dashboard");
 
   return (
     <main className="relative flex min-h-svh items-center justify-center bg-muted/40 p-4 py-8">
