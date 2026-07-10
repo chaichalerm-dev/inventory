@@ -19,6 +19,8 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useLanguage } from "@/lib/i18n/language-provider";
+import { interpolate } from "@/lib/i18n/get-dictionary";
 
 type DataTableProps<TData, TValue> = {
   columns: ColumnDef<TData, TValue>[];
@@ -32,8 +34,10 @@ export function DataTable<TData, TValue>({
   columns,
   data,
   filterColumn,
-  filterPlaceholder = "Filter…",
+  filterPlaceholder,
 }: DataTableProps<TData, TValue>) {
+  const { dict } = useLanguage();
+  const placeholder = filterPlaceholder ?? dict.common.search;
   const table = useReactTable({
     data,
     columns,
@@ -48,11 +52,11 @@ export function DataTable<TData, TValue>({
     <div className="space-y-3">
       {filterColumn ? (
         <Input
-          placeholder={filterPlaceholder}
+          placeholder={placeholder}
           value={(table.getColumn(filterColumn)?.getFilterValue() as string) ?? ""}
           onChange={(e) => table.getColumn(filterColumn)?.setFilterValue(e.target.value)}
           className="max-w-sm"
-          aria-label={filterPlaceholder}
+          aria-label={placeholder}
         />
       ) : null}
       <div className="overflow-x-auto rounded-md border">
@@ -84,7 +88,7 @@ export function DataTable<TData, TValue>({
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground">
-                  No results.
+                  {dict.common.noResults}
                 </TableCell>
               </TableRow>
             )}
@@ -99,10 +103,13 @@ export function DataTable<TData, TValue>({
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
-            Previous
+            {dict.common.previous}
           </Button>
           <span className="text-sm text-muted-foreground">
-            Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+            {interpolate(dict.common.pageOf, {
+              page: table.getState().pagination.pageIndex + 1,
+              total: table.getPageCount(),
+            })}
           </span>
           <Button
             variant="outline"
@@ -110,7 +117,7 @@ export function DataTable<TData, TValue>({
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
-            Next
+            {dict.common.next}
           </Button>
         </div>
       ) : null}
