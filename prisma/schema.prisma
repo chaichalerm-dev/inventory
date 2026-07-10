@@ -276,6 +276,10 @@ model PurchaseOrderItem {
 model SystemSetting {
   id                    String   @id @default("global")
   showLoginDemoAccounts Boolean  @default(true)
+  // Client-resized data URL, same storage-free approach as Product.imageUrl —
+  // shown in place of the default logo mark across the app (sidebar,
+  // sign-in page, browser tab icon) for white-labeling a deployment.
+  logoUrl               String?  @db.Text
   updatedAt             DateTime @updatedAt
 
   @@map("system_settings")

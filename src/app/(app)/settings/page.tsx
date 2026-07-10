@@ -26,7 +26,10 @@ export default async function SettingsPage() {
       <PageHeader title={dict.settings.title} description={dict.settings.desc} />
       <div className="space-y-4">
         <OrganizationSettingsForm organizationName={organization.name} />
-        <SystemSettingsForm showLoginDemoAccounts={systemSettings.showLoginDemoAccounts} />
+        <SystemSettingsForm
+          showLoginDemoAccounts={systemSettings.showLoginDemoAccounts}
+          logoUrl={systemSettings.logoUrl}
+        />
       </div>
     </>
   );

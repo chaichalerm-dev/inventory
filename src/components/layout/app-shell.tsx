@@ -19,6 +19,7 @@ type AppShellProps = {
   name: string;
   email: string;
   avatarUrl: string | null;
+  logoUrl: string | null;
   children: React.ReactNode;
 };
 
@@ -28,6 +29,7 @@ export function AppShell({
   name,
   email,
   avatarUrl,
+  logoUrl,
   children,
 }: AppShellProps) {
   const [collapsed, setCollapsed] = useState(false);
@@ -62,8 +64,13 @@ export function AppShell({
         <div className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
           {!collapsed ? (
             <>
-              <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
-                <Boxes className="size-4" aria-hidden="true" />
+              <span className="flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-md bg-primary text-primary-foreground">
+                {logoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={logoUrl} alt="" className="size-full object-cover" />
+                ) : (
+                  <Boxes className="size-4" aria-hidden="true" />
+                )}
               </span>
               <Link href="/dashboard" className="truncate font-semibold">
                 {dict.common.appName}

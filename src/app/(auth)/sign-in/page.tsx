@@ -8,7 +8,7 @@ import { SignInForm } from "@/features/auth/components/sign-in-form";
 export const metadata: Metadata = { title: "เข้าสู่ระบบ · Sign in" };
 
 export default async function SignInPage() {
-  const [{ showLoginDemoAccounts }, dict] = await Promise.all([
+  const [{ showLoginDemoAccounts, logoUrl }, dict] = await Promise.all([
     getSystemSettings(),
     getLocale().then(getDictionary),
   ]);
@@ -17,8 +17,13 @@ export default async function SignInPage() {
     <div className="space-y-6">
       <div className="text-center">
         <div className="mb-3 flex items-center justify-center gap-2">
-          <span className="flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Boxes className="size-6" aria-hidden="true" />
+          <span className="flex size-10 items-center justify-center overflow-hidden rounded-lg bg-primary text-primary-foreground">
+            {logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={logoUrl} alt="" className="size-full object-cover" />
+            ) : (
+              <Boxes className="size-6" aria-hidden="true" />
+            )}
           </span>
           <div className="text-left">
             <p className="text-xl font-bold leading-tight">{dict.common.appName}</p>

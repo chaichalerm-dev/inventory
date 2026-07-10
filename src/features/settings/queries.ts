@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 // page needs this before any org is known, so it can't live on Organization.
 export type SystemSettings = {
   showLoginDemoAccounts: boolean;
+  logoUrl: string | null;
 };
 
 const SYSTEM_SETTINGS_ID = "global";
@@ -16,10 +17,18 @@ export async function getSystemSettings(): Promise<SystemSettings> {
   const existing = await prisma.systemSetting.findUnique({
     where: { id: SYSTEM_SETTINGS_ID },
   });
-  if (existing) return { showLoginDemoAccounts: existing.showLoginDemoAccounts };
+  if (existing) {
+    return {
+      showLoginDemoAccounts: existing.showLoginDemoAccounts,
+      logoUrl: existing.logoUrl,
+    };
+  }
 
   const created = await prisma.systemSetting.create({
     data: { id: SYSTEM_SETTINGS_ID },
   });
-  return { showLoginDemoAccounts: created.showLoginDemoAccounts };
+  return {
+    showLoginDemoAccounts: created.showLoginDemoAccounts,
+    logoUrl: created.logoUrl,
+  };
 }
