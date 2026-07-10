@@ -139,10 +139,30 @@ export async function approveRequisitionAction(id: string): Promise<ActionResult
         }
       }
       for (const item of requisition.items) {
-        await tx.product.update({
-          where: { id: item.productId },
+        // The loop above validated against a snapshot; a concurrent approval
+        // may have consumed the stock since. Making the decrement itself
+        // conditional is what actually prevents quantity going negative —
+        // zero rows updated means someone else got there first.
+        const { count } = await tx.product.updateMany({
+          where: {
+            id: item.productId,
+            organizationId: orgId,
+            quantity: { gte: item.quantity },
+          },
           data: { quantity: { decrement: item.quantity } },
         });
+        if (count === 0) {
+          const current = await tx.product.findUnique({
+            where: { id: item.productId },
+            select: { name: true, quantity: true },
+          });
+          throw new RequisitionError(
+            interpolate(t.insufficientStockAtApprove, {
+              name: current?.name ?? item.product.name,
+              available: current?.quantity ?? 0,
+            }),
+          );
+        }
         await tx.stockMovement.create({
           data: {
             organizationId: orgId,

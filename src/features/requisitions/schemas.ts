@@ -5,7 +5,10 @@ export const requisitionItemSchema = z.object({
   quantity: z
     .number("กรุณากรอกจำนวน")
     .int("จำนวนต้องเป็นจำนวนเต็ม")
-    .min(1, "จำนวนต้องอย่างน้อย 1"),
+    .min(1, "จำนวนต้องอย่างน้อย 1")
+    // Upper bound keeps merged duplicate rows comfortably inside Postgres's
+    // Int range no matter how many line items a request carries.
+    .max(1_000_000, "จำนวนมากเกินไป"),
 });
 
 export const requisitionSchema = z.object({
