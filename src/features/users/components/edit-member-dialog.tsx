@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useForm, type ControllerRenderProps } from "react-hook-form";
+import { useForm, useWatch, type ControllerRenderProps } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, Pencil } from "lucide-react";
 import { toast } from "sonner";
@@ -102,7 +102,9 @@ function EditMemberForm({
     },
   });
 
-  const password = form.watch("password");
+  // useWatch (not form.watch) so the React Compiler can memoize this
+  // component — watch() returns unmemoizable functions and disables it.
+  const password = useWatch({ control: form.control, name: "password" });
 
   function onSubmit(values: EditMemberFormInput) {
     setRootError(null);

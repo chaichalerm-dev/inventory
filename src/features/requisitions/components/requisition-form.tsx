@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useFieldArray, useForm } from "react-hook-form";
+import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -62,6 +62,10 @@ export function RequisitionForm({ products }: RequisitionFormProps) {
   });
 
   const productById = new Map(products.map((p) => [p.id, p]));
+  // One subscription for the whole array — form.watch() inside the map
+  // below would both violate the rules of hooks and disable the React
+  // Compiler for this component.
+  const watchedItems = useWatch({ control: form.control, name: "items" });
 
   function onSubmit(values: RequisitionInput) {
     setRootError(null);
@@ -84,7 +88,7 @@ export function RequisitionForm({ products }: RequisitionFormProps) {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5" noValidate>
             <div className="space-y-3">
               {fields.map((fieldItem, index) => {
-                const selectedId = form.watch(`items.${index}.productId`);
+                const selectedId = watchedItems?.[index]?.productId;
                 const selected = selectedId ? productById.get(selectedId) : undefined;
                 return (
                   <div
