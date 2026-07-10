@@ -12,7 +12,14 @@ export const dynamic = "force-dynamic";
 // and in-app branding stay visually consistent, unless a custom logo has
 // been uploaded in settings.
 export default async function Icon() {
-  const { logoUrl } = await getSystemSettings();
+  // The favicon must never 500 — a database hiccup here would make every
+  // open tab flash a broken icon even though the page itself may be fine.
+  let logoUrl: string | null = null;
+  try {
+    ({ logoUrl } = await getSystemSettings());
+  } catch {
+    // Fall back to the default mark.
+  }
 
   return new ImageResponse(
     (

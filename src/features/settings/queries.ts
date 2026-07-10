@@ -1,4 +1,5 @@
 import "server-only";
+import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 
 // Deployment-wide settings, not scoped to any organization — the sign-in
@@ -24,11 +25,29 @@ export async function getSystemSettings(): Promise<SystemSettings> {
     };
   }
 
-  const created = await prisma.systemSetting.create({
-    data: { id: SYSTEM_SETTINGS_ID },
-  });
-  return {
-    showLoginDemoAccounts: created.showLoginDemoAccounts,
-    logoUrl: created.logoUrl,
-  };
+  try {
+    const created = await prisma.systemSetting.create({
+      data: { id: SYSTEM_SETTINGS_ID },
+    });
+    return {
+      showLoginDemoAccounts: created.showLoginDemoAccounts,
+      logoUrl: created.logoUrl,
+    };
+  } catch (error) {
+    // Two first-ever requests can race into this branch; the loser's create
+    // hits the primary key — the row now exists, so just read it.
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      const row = await prisma.systemSetting.findUniqueOrThrow({
+        where: { id: SYSTEM_SETTINGS_ID },
+      });
+      return {
+        showLoginDemoAccounts: row.showLoginDemoAccounts,
+        logoUrl: row.logoUrl,
+      };
+    }
+    throw error;
+  }
 }
