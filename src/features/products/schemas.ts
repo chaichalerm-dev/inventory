@@ -7,6 +7,14 @@ export const productSchema = z.object({
   sku: z.string().trim().min(1, "SKU is required").max(50),
   name: z.string().trim().min(1, "Name is required").max(150),
   description: z.string().trim().max(500).optional(),
+  // Data URL, client-side resized — same storage-free approach as
+  // User.avatarUrl (see profile/schemas.ts). null clears the photo.
+  imageUrl: z
+    .string()
+    .max(2_000_000, "ไฟล์รูปภาพใหญ่เกินไป")
+    .refine((v) => v.startsWith("data:image/"), "รูปภาพไม่ถูกต้อง")
+    .nullable()
+    .optional(),
   categoryId: z.string().min(1),
   unit: z.string().trim().min(1, "Unit is required").max(20),
   // Plain z.number() (not z.coerce) so the schema's input and output types

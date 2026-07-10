@@ -3,6 +3,7 @@
 import { useOptimistic, useTransition } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { toast } from "sonner";
+import { CupSoda } from "lucide-react";
 import type { ProductRow } from "@/features/products/queries";
 import type { CategoryRow } from "@/features/categories/queries";
 import { deleteProductAction } from "@/features/products/actions";
@@ -40,6 +41,24 @@ export function ProductsTable({ products, categories, isAdmin }: ProductsTablePr
   }
 
   const columns: ColumnDef<ProductRow>[] = [
+    {
+      id: "photo",
+      header: "",
+      cell: ({ row }) => (
+        <div className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-muted">
+          {row.original.imageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={row.original.imageUrl}
+              alt=""
+              className="size-full object-cover"
+            />
+          ) : (
+            <CupSoda className="size-4 text-muted-foreground" aria-hidden="true" />
+          )}
+        </div>
+      ),
+    },
     {
       accessorKey: "sku",
       header: t.columnSku,

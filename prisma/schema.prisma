@@ -99,6 +99,9 @@ model Product {
   sku            String
   name           String
   description    String?
+  // Client-resized (max 512px) JPEG stored as a base64 data URL — same
+  // no-external-storage approach as User.avatarUrl, kept small on purpose.
+  imageUrl       String?  @db.Text
   unit           String   @default("pcs")
   // Cached balance of the StockMovement ledger; updated in the same
   // transaction as each movement. Never mutated directly.

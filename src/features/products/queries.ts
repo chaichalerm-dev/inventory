@@ -8,6 +8,7 @@ export type ProductRow = {
   sku: string;
   name: string;
   description: string | null;
+  imageUrl: string | null;
   unit: string;
   quantity: number;
   minStock: number;
@@ -29,6 +30,7 @@ export async function getProducts(orgId: string): Promise<ProductRow[]> {
     sku: p.sku,
     name: p.name,
     description: p.description,
+    imageUrl: p.imageUrl,
     unit: p.unit,
     quantity: p.quantity,
     minStock: p.minStock,

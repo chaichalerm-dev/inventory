@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { CupSoda, Trash2, Upload } from "lucide-react";
 import {
   createProductAction,
   updateProductAction,
@@ -16,6 +17,7 @@ import {
 import type { ProductRow } from "@/features/products/queries";
 import type { CategoryRow } from "@/features/categories/queries";
 import { useLanguage } from "@/lib/i18n/language-provider";
+import { resizeImageToDataUrl } from "@/lib/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -81,6 +83,9 @@ export function ProductFormDialog({
   );
 }
 
+const MAX_IMAGE_DIMENSION = 512;
+const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+
 function ProductForm({
   product,
   categories,
@@ -108,6 +113,7 @@ function ProductForm({
       sku: product?.sku ?? "",
       name: product?.name ?? "",
       description: product?.description ?? "",
+      imageUrl: product?.imageUrl ?? null,
       categoryId: product?.categoryId ?? NO_CATEGORY,
       unit: product?.unit ?? "pcs",
       price: product?.price ?? 0,
@@ -138,6 +144,19 @@ function ProductForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" noValidate>
+        <FormField
+          control={form.control}
+          name="imageUrl"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t.photo}</FormLabel>
+              <FormControl>
+                <ProductImageField value={field.value ?? null} onChange={field.onChange} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <div className="grid gap-4 sm:grid-cols-2">
           <FormField
             control={form.control}
@@ -173,7 +192,7 @@ function ProductForm({
             <FormItem>
               <FormLabel>{t.name}</FormLabel>
               <FormControl>
-                <Input {...field} />
+                <Input placeholder={t.namePlaceholder} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -254,5 +273,91 @@ function ProductForm({
         </Button>
       </form>
     </Form>
+  );
+}
+
+// A picture is the fastest way to tell visually similar products apart
+// (e.g. a can vs. a bottle of the same drink) — kept in form state like any
+// other field rather than uploaded immediately, so it saves/cancels with
+// the rest of the dialog.
+function ProductImageField({
+  value,
+  onChange,
+}: {
+  value: string | null;
+  onChange: (value: string | null) => void;
+}) {
+  const { dict } = useLanguage();
+  const t = dict.products;
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error(t.invalidImage);
+      return;
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      toast.error(t.imageTooLarge);
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      onChange(await resizeImageToDataUrl(file, MAX_IMAGE_DIMENSION));
+    } catch {
+      toast.error(t.processError);
+    } finally {
+      setIsProcessing(false);
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-4">
+      <div className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-muted">
+        {value ? (
+          // Local data URL, not a remote src next/image can optimize.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={value} alt="" className="size-full object-cover" />
+        ) : (
+          <CupSoda className="size-8 text-muted-foreground" aria-hidden="true" />
+        )}
+      </div>
+      <div className="flex flex-col gap-2">
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleFileChange}
+        />
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={isProcessing}
+          onClick={() => inputRef.current?.click()}
+        >
+          <Upload className="size-4" />
+          {value ? t.changePhoto : t.uploadPhoto}
+        </Button>
+        {value ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            disabled={isProcessing}
+            onClick={() => onChange(null)}
+          >
+            <Trash2 className="size-4" />
+            {t.removePhoto}
+          </Button>
+        ) : null}
+      </div>
+    </div>
   );
 }
