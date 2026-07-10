@@ -318,6 +318,7 @@ const en: Dictionary = {
     invalidRole: "Invalid access level",
     notFound: "This user could not be found",
     cannotChangeOwnerRole: "The owner's access level can't be changed",
+    cannotEditOwner: "Only the owner can edit their own account",
     cannotDeleteOwner: "The owner can't be removed",
     cannotDeleteSelf: "You can't remove your own account",
   },

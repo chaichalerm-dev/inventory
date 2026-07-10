@@ -31,10 +31,12 @@ export function MemberRowActions({
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   if (member.role === "OWNER") {
+    // Only the owner may edit the owner (the server enforces this too) —
+    // showing the dialog to other admins would just invite a failed save.
     return (
       <div className="flex items-center justify-end gap-2">
         <span className="text-sm text-muted-foreground">{dict.users.roleOwner}</span>
-        <EditMemberDialog member={member} />
+        {isSelf ? <EditMemberDialog member={member} /> : null}
       </div>
     );
   }

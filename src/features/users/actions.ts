@@ -27,21 +27,39 @@ export async function inviteUserAction(
   }
   const { name, email, password, role } = parsed.data;
 
-  const existing = await prisma.user.findUnique({ where: { email } });
-  if (existing) {
+  const existing = await prisma.user.findUnique({
+    where: { email },
+    include: { _count: { select: { memberships: true } } },
+  });
+  // Removing a member deletes only the membership (their stock history must
+  // survive), which leaves the User row behind. Such an orphaned account is
+  // safe to re-activate — the admin sets a fresh password here, so whoever
+  // knew the old one gains nothing.
+  if (existing && existing._count.memberships > 0) {
     return fail(dict.users.emailTaken, { email: [dict.users.emailTaken] });
   }
 
   const passwordHash = await hash(password, 12);
   try {
-    await prisma.user.create({
-      data: {
-        name,
-        email,
-        passwordHash,
-        memberships: { create: { organizationId: orgId, role } },
-      },
-    });
+    if (existing) {
+      await prisma.user.update({
+        where: { id: existing.id },
+        data: {
+          name,
+          passwordHash,
+          memberships: { create: { organizationId: orgId, role } },
+        },
+      });
+    } else {
+      await prisma.user.create({
+        data: {
+          name,
+          email,
+          passwordHash,
+          memberships: { create: { organizationId: orgId, role } },
+        },
+      });
+    }
   } catch (error) {
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -61,7 +79,7 @@ export async function updateMemberAction(
   input: UpdateMemberInput,
 ): Promise<ActionResult> {
   const dict = getDictionary(await getLocale());
-  const { orgId } = await requireAdmin();
+  const { orgId, userId } = await requireAdmin();
   const parsed = updateMemberSchema.safeParse(input);
   if (!parsed.success) {
     return fail(dict.auth.invalidInput, parsed.error.flatten().fieldErrors);
@@ -70,9 +88,14 @@ export async function updateMemberAction(
 
   const membership = await prisma.membership.findFirst({
     where: { id: membershipId, organizationId: orgId },
-    select: { userId: true },
+    select: { userId: true, role: true },
   });
   if (!membership) return fail(dict.users.notFound);
+  // Editing includes setting a new password — an ADMIN doing that to the
+  // OWNER would be an account takeover. Only the owner edits the owner.
+  if (membership.role === "OWNER" && membership.userId !== userId) {
+    return fail(dict.users.cannotEditOwner);
+  }
 
   try {
     await prisma.user.update({

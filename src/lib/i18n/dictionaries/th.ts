@@ -316,6 +316,7 @@ const th = {
     invalidRole: "สิทธิ์ไม่ถูกต้อง",
     notFound: "ไม่พบผู้ใช้งานนี้",
     cannotChangeOwnerRole: "ไม่สามารถเปลี่ยนสิทธิ์เจ้าของระบบได้",
+    cannotEditOwner: "เฉพาะเจ้าของระบบเท่านั้นที่แก้ไขข้อมูลของตัวเองได้",
     cannotDeleteOwner: "ไม่สามารถลบเจ้าของระบบได้",
     cannotDeleteSelf: "ไม่สามารถลบบัญชีของตัวเองได้",
   },
