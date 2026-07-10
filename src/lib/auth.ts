@@ -12,6 +12,13 @@ export type VerifiedCredentials = {
   role: MembershipRole;
 };
 
+// A real bcrypt hash of a throwaway string, compared against when the email
+// doesn't exist — without it, unknown emails return in ~1ms while known ones
+// take a full bcrypt verify, letting an attacker enumerate accounts by
+// timing the login endpoint.
+const DUMMY_PASSWORD_HASH =
+  "$2b$12$Cw0DefKS7AvTePyKOEvW6uQAl6W76QTOGksQVgKWrOwusK0N8eEJq";
+
 /**
  * Single source of truth for "is this email+password combination valid".
  * Role/org membership must never be looked up or revealed to a caller
@@ -27,7 +34,10 @@ export async function verifyCredentials(
     where: { email },
     include: { memberships: { take: 1 } },
   });
-  if (!user) return null;
+  if (!user) {
+    await compare(password, DUMMY_PASSWORD_HASH);
+    return null;
+  }
 
   const valid = await compare(password, user.passwordHash);
   if (!valid) return null;
