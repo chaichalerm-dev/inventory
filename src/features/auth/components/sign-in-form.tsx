@@ -199,54 +199,52 @@ export function SignInForm({ showDemoAccounts }: { showDemoAccounts: boolean }) 
         </CardFooter>
       </Card>
 
-      <Card className="bg-muted/40">
-        <CardContent className="pt-6">
-          <p className="mb-4 text-center text-sm font-semibold">{dict.auth.roleSplitTitle}</p>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="mb-2 flex items-center gap-1.5 text-sm font-medium">
-                <ShieldCheck className="size-4 text-primary" aria-hidden="true" />
-                Admin
-              </p>
-              <ul className="space-y-1.5">
-                {dict.auth.adminFeatures.map((feature) => (
-                  <li
-                    key={feature}
-                    className="flex items-start gap-1.5 text-xs text-muted-foreground"
-                  >
-                    <Check className="mt-0.5 size-3 shrink-0" aria-hidden="true" />
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-              {showDemoAccounts ? (
+      {showDemoAccounts ? (
+        <Card className="bg-muted/40">
+          <CardContent className="pt-6">
+            <p className="mb-4 text-center text-sm font-semibold">{dict.auth.roleSplitTitle}</p>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="mb-2 flex items-center gap-1.5 text-sm font-medium">
+                  <ShieldCheck className="size-4 text-primary" aria-hidden="true" />
+                  Admin
+                </p>
+                <ul className="space-y-1.5">
+                  {dict.auth.adminFeatures.map((feature) => (
+                    <li
+                      key={feature}
+                      className="flex items-start gap-1.5 text-xs text-muted-foreground"
+                    >
+                      <Check className="mt-0.5 size-3 shrink-0" aria-hidden="true" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
                 <DemoAccountBox account={ADMIN_DEMO} onUse={fillDemoAccount} />
-              ) : null}
-            </div>
-            <div className="relative pl-4">
-              <Separator orientation="vertical" className="absolute left-0" />
-              <p className="mb-2 flex items-center gap-1.5 text-sm font-medium">
-                <UserRound className="size-4 text-primary" aria-hidden="true" />
-                {dict.auth.userRoleLabel}
-              </p>
-              <ul className="space-y-1.5">
-                {dict.auth.userFeatures.map((feature) => (
-                  <li
-                    key={feature}
-                    className="flex items-start gap-1.5 text-xs text-muted-foreground"
-                  >
-                    <Check className="mt-0.5 size-3 shrink-0" aria-hidden="true" />
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-              {showDemoAccounts ? (
+              </div>
+              <div className="relative pl-4">
+                <Separator orientation="vertical" className="absolute left-0" />
+                <p className="mb-2 flex items-center gap-1.5 text-sm font-medium">
+                  <UserRound className="size-4 text-primary" aria-hidden="true" />
+                  {dict.auth.userRoleLabel}
+                </p>
+                <ul className="space-y-1.5">
+                  {dict.auth.userFeatures.map((feature) => (
+                    <li
+                      key={feature}
+                      className="flex items-start gap-1.5 text-xs text-muted-foreground"
+                    >
+                      <Check className="mt-0.5 size-3 shrink-0" aria-hidden="true" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
                 <DemoAccountBox account={USER_DEMO} onUse={fillDemoAccount} />
-              ) : null}
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      ) : null}
     </div>
   );
 }
