@@ -30,6 +30,8 @@ export default function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Everything except Next internals, static assets, and the auth API.
-  matcher: ["/((?!api/auth|_next|favicon.ico|.*\\..*).*)"],
+  // Everything except Next internals, static assets, the auth API, and the
+  // generated favicon (src/app/icon.tsx — has no file extension, so it isn't
+  // caught by the .* exclusion below, and needs to load before login too).
+  matcher: ["/((?!api/auth|_next|favicon.ico|icon|.*\\..*).*)"],
 };

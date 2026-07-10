@@ -1,0 +1,32 @@
+services:
+  app:
+    build:
+      context: .
+      target: runner
+    ports:
+      - "3000:3000"
+    environment:
+      # Interpolated from the .env file in this directory by Compose itself
+      # (not passed through as a raw file — env_file: would keep the quotes
+      # from .env's dotenv-style values and break the connection string).
+      DATABASE_URL: ${DATABASE_URL}
+      DIRECT_URL: ${DIRECT_URL}
+      AUTH_SECRET: ${AUTH_SECRET}
+      # Auth.js refuses to trust the request's Host header unless told to —
+      # required whenever the app doesn't sit on its own well-known origin
+      # (behind Docker port-mapping, a reverse proxy, etc).
+      AUTH_TRUST_HOST: "true"
+    restart: unless-stopped
+
+  # One-off: applies pending migrations to the database configured in .env.
+  # Run with: docker compose run --rm migrate
+  migrate:
+    build:
+      context: .
+      target: deps
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      DIRECT_URL: ${DIRECT_URL}
+    command: ["npx", "prisma", "migrate", "deploy"]
+    profiles:
+      - tools
