@@ -30,7 +30,7 @@ export default async function Icon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#0a0a0a",
+          background: "#2563eb",
           borderRadius: 7,
         }}
       >
