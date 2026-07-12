@@ -58,6 +58,7 @@ const th = {
     emailPlaceholder: "กรอกอีเมลของคุณ",
     password: "รหัสผ่าน",
     passwordPlaceholder: "กรอกรหัสผ่าน",
+    confirmPassword: "ยืนยันรหัสผ่าน",
     showPassword: "แสดงรหัสผ่าน",
     hidePassword: "ซ่อนรหัสผ่าน",
     rememberEmail: "จดจำอีเมล",
@@ -93,11 +94,37 @@ const th = {
     signingOut: "กำลังออกจากระบบ…",
     signUpTitle: "สร้างบัญชีองค์กรใหม่",
     signUpDesc: "ตั้งค่าองค์กรของคุณ และคุณจะเป็นเจ้าของระบบโดยอัตโนมัติ",
-    yourName: "ชื่อของคุณ",
     organizationName: "ชื่อองค์กร",
     creatingAccount: "กำลังสร้างบัญชี…",
     createAccount: "สร้างบัญชี",
     alreadyHaveAccount: "มีบัญชีอยู่แล้ว?",
+  },
+  landing: {
+    navSignIn: "เข้าสู่ระบบ",
+    navGetStarted: "เริ่มต้นใช้งานฟรี",
+    navGoToDashboard: "ไปที่แดชบอร์ด",
+    heroEyebrow: "ระบบจัดการคลังสินค้าครบวงจร",
+    heroTitle: "จัดการสต็อกสินค้าได้ง่ายขึ้น ในที่เดียว",
+    heroSubtitle:
+      "ติดตามสินค้าคงคลัง อนุมัติคำขอเบิก-คืน และดูภาพรวมธุรกิจแบบเรียลไทม์ เหมาะสำหรับทีมขนาดเล็กถึงกลาง",
+    heroCtaPrimary: "เริ่มต้นใช้งานฟรี",
+    heroCtaSecondary: "เข้าสู่ระบบ",
+    featuresTitle: "ทุกสิ่งที่ธุรกิจของคุณต้องการ",
+    featuresSubtitle: "ครบทุกฟีเจอร์สำหรับจัดการคลังสินค้า ตั้งแต่รับเข้าจนถึงรายงาน",
+    featureStockTitle: "จัดการสินค้าและสต็อก",
+    featureStockDesc:
+      "เพิ่ม แก้ไข และติดตามจำนวนสินค้าคงเหลือแบบเรียลไทม์ พร้อมแจ้งเตือนเมื่อสินค้าใกล้หมด",
+    featureRequisitionTitle: "ระบบเบิก-คืนสินค้า",
+    featureRequisitionDesc:
+      "พนักงานส่งคำขอเบิกสินค้า ผู้ดูแลระบบอนุมัติและติดตามการคืนได้ในขั้นตอนเดียว",
+    featureReportsTitle: "รายงานและภาพรวมธุรกิจ",
+    featureReportsDesc:
+      "ดูแนวโน้มการเคลื่อนไหวสินค้า สินค้าใกล้หมด และสรุปข้อมูลสำคัญได้ในหน้าเดียว",
+    featureRolesTitle: "แยกสิทธิ์การใช้งานชัดเจน",
+    featureRolesDesc: "กำหนดสิทธิ์ Admin และ User แยกกัน เพื่อความปลอดภัยของข้อมูลองค์กร",
+    ctaTitle: "พร้อมเริ่มต้นจัดการคลังสินค้าของคุณแล้วหรือยัง?",
+    ctaSubtitle: "สร้างองค์กรของคุณได้ฟรีภายในไม่กี่นาที ไม่ต้องใช้บัตรเครดิต",
+    ctaButton: "สร้างองค์กรใหม่",
   },
   dashboard: {
     admin: {

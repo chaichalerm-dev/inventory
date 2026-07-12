@@ -8,7 +8,10 @@ const SESSION_COOKIES = [
   "__Secure-authjs.session-token",
 ];
 
-const PUBLIC_PATHS = ["/sign-in", "/sign-up"];
+// "/" is matched exactly — it must NOT use startsWith, since every path on
+// the site begins with "/" and that would make the whole app public.
+const PUBLIC_PREFIX_PATHS = ["/sign-in", "/sign-up"];
+const PUBLIC_EXACT_PATHS = ["/"];
 
 /**
  * Nonce-based Content-Security-Policy, following the official Next.js
@@ -44,7 +47,9 @@ export default function proxy(request: NextRequest) {
   const hasSession = SESSION_COOKIES.some((name) =>
     request.cookies.has(name),
   );
-  const isPublic = PUBLIC_PATHS.some((path) => pathname.startsWith(path));
+  const isPublic =
+    PUBLIC_EXACT_PATHS.includes(pathname) ||
+    PUBLIC_PREFIX_PATHS.some((path) => pathname.startsWith(path));
 
   // Only guard the unauthenticated direction here. Cookie presence does not
   // prove validity (e.g. a cookie signed with a rotated AUTH_SECRET), so

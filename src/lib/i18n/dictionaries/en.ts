@@ -60,6 +60,7 @@ const en: Dictionary = {
     emailPlaceholder: "Enter your email",
     password: "Password",
     passwordPlaceholder: "Enter your password",
+    confirmPassword: "Confirm password",
     showPassword: "Show password",
     hidePassword: "Hide password",
     rememberEmail: "Remember email",
@@ -95,11 +96,37 @@ const en: Dictionary = {
     signingOut: "Signing out…",
     signUpTitle: "Create your account",
     signUpDesc: "Sets up your organization and makes you its owner.",
-    yourName: "Your name",
     organizationName: "Organization name",
     creatingAccount: "Creating account…",
     createAccount: "Create account",
     alreadyHaveAccount: "Already have an account?",
+  },
+  landing: {
+    navSignIn: "Sign in",
+    navGetStarted: "Get started free",
+    navGoToDashboard: "Go to dashboard",
+    heroEyebrow: "All-in-one inventory management",
+    heroTitle: "Manage your inventory more easily, all in one place",
+    heroSubtitle:
+      "Track stock levels, approve requisitions and returns, and see your business at a glance in real time — built for small to mid-sized teams.",
+    heroCtaPrimary: "Get started free",
+    heroCtaSecondary: "Sign in",
+    featuresTitle: "Everything your business needs",
+    featuresSubtitle: "Every feature for running your inventory, from stock-in to reporting",
+    featureStockTitle: "Product & stock management",
+    featureStockDesc:
+      "Add, edit, and track stock levels in real time, with alerts when items are running low.",
+    featureRequisitionTitle: "Requisition & return workflow",
+    featureRequisitionDesc:
+      "Staff submit requisition requests; admins approve them and track returns in one flow.",
+    featureReportsTitle: "Reports & business overview",
+    featureReportsDesc:
+      "See stock movement trends, low-stock items, and key metrics on a single page.",
+    featureRolesTitle: "Clear role-based access",
+    featureRolesDesc: "Separate Admin and User permissions to keep your organization's data safe.",
+    ctaTitle: "Ready to start managing your inventory?",
+    ctaSubtitle: "Set up your organization for free in minutes — no credit card required.",
+    ctaButton: "Create your organization",
   },
   dashboard: {
     admin: {

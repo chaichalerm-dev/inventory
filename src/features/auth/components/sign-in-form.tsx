@@ -53,7 +53,7 @@ export function SignInForm({ showDemoAccounts }: { showDemoAccounts: boolean }) 
   const { dict } = useLanguage();
   const [isPending, startTransition] = useTransition();
   const [rootError, setRootError] = useState<string | null>(null);
-  const [portal, setPortal] = useState<Portal>("ADMIN");
+  const [portal, setPortal] = useState<Portal>("USER");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberEmail, setRememberEmail] = useState(false);
 
@@ -100,13 +100,13 @@ export function SignInForm({ showDemoAccounts }: { showDemoAccounts: boolean }) 
         <CardContent className="space-y-5 pt-6">
           <Tabs value={portal} onValueChange={(value) => setPortal(value as Portal)}>
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="ADMIN">
-                <ShieldCheck className="size-4" aria-hidden="true" />
-                {dict.auth.adminLogin}
-              </TabsTrigger>
               <TabsTrigger value="USER">
                 <UserRound className="size-4" aria-hidden="true" />
                 {dict.auth.userLogin}
+              </TabsTrigger>
+              <TabsTrigger value="ADMIN">
+                <ShieldCheck className="size-4" aria-hidden="true" />
+                {dict.auth.adminLogin}
               </TabsTrigger>
             </TabsList>
           </Tabs>
