@@ -30,9 +30,9 @@ export function MobileNav({ role }: { role: MembershipRole }) {
           <Menu className="size-5" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-64 p-0">
-        <SheetHeader className="border-b px-4 py-3">
-          <SheetTitle>{dict.common.appName}</SheetTitle>
+      <SheetContent side="left" className="w-72 border-sidebar-border bg-sidebar p-0 text-sidebar-foreground">
+        <SheetHeader className="border-b border-sidebar-border px-4 py-5">
+          <SheetTitle className="text-left text-white">{dict.common.appName}</SheetTitle>
         </SheetHeader>
         <SidebarNav role={role} onNavigate={() => setOpen(false)} />
       </SheetContent>

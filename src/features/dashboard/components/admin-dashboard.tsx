@@ -22,7 +22,7 @@ export async function AdminDashboard({
   return (
     <>
       <PageHeader title={t.title} description={t.description} />
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           title={t.totalProducts}
           value={data.totalProducts}
@@ -52,7 +52,7 @@ export async function AdminDashboard({
           tone="red"
         />
       </div>
-      <div className="mt-4 grid gap-4 xl:grid-cols-3">
+      <div className="mt-5 grid gap-5 xl:grid-cols-3">
         <div className="xl:col-span-2">
           <MovementChart
             data={data.series}

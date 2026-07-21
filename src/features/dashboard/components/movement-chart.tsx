@@ -33,7 +33,7 @@ function ChartTooltip({
 }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-md border bg-popover px-3 py-2 text-xs shadow-md">
+    <div className="rounded-[2px] border bg-popover px-3 py-2 text-xs shadow-lg">
       <p className="mb-1 font-medium text-popover-foreground">{label}</p>
       {series.map((s) => {
         const entry = payload.find((p) => p.dataKey === s.key);
@@ -70,7 +70,7 @@ export function MovementChart({
 
   return (
     <Card>
-      <CardHeader className="flex flex-row flex-wrap items-center justify-between space-y-0">
+      <CardHeader className="flex flex-row flex-wrap items-center justify-between space-y-0 border-b pb-4">
         <CardTitle className="text-base">{title}</CardTitle>
         <div className="flex items-center gap-4 text-xs text-muted-foreground">
           {series.map((s) => (

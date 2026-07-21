@@ -1,8 +1,22 @@
+-- Consolidated baseline migration, replacing the 8 incremental migrations
+-- this project accumulated (20260707153511_init through
+-- 20260721040000_add_platform_admin_flag). Generated from the schema at
+-- that point via `prisma migrate diff --from-empty --to-schema`, so a fresh
+-- install only ever runs this one file. The already-migrated Supabase
+-- database was reconciled with `prisma migrate resolve --applied` for this
+-- migration name — no SQL below has been re-run against it.
+--
+-- CreateSchema
+CREATE SCHEMA IF NOT EXISTS "public";
+
 -- CreateEnum
 CREATE TYPE "MembershipRole" AS ENUM ('OWNER', 'ADMIN', 'MEMBER');
 
 -- CreateEnum
 CREATE TYPE "StockMovementType" AS ENUM ('IN', 'OUT', 'ADJUSTMENT');
+
+-- CreateEnum
+CREATE TYPE "RequisitionStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED', 'RETURN_REQUESTED', 'RETURNED');
 
 -- CreateEnum
 CREATE TYPE "PurchaseOrderStatus" AS ENUM ('DRAFT', 'ORDERED', 'RECEIVED', 'CANCELLED');
@@ -24,8 +38,10 @@ CREATE TABLE "users" (
     "name" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "passwordHash" TEXT NOT NULL,
+    "avatarUrl" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "isPlatformAdmin" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
@@ -61,6 +77,7 @@ CREATE TABLE "products" (
     "sku" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
+    "imageUrl" TEXT,
     "unit" TEXT NOT NULL DEFAULT 'pcs',
     "quantity" INTEGER NOT NULL DEFAULT 0,
     "minStock" INTEGER NOT NULL DEFAULT 0,
@@ -86,6 +103,33 @@ CREATE TABLE "stock_movements" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "stock_movements_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "requisitions" (
+    "id" TEXT NOT NULL,
+    "organizationId" TEXT NOT NULL,
+    "requesterId" TEXT NOT NULL,
+    "decidedById" TEXT,
+    "reqNumber" TEXT NOT NULL,
+    "status" "RequisitionStatus" NOT NULL DEFAULT 'PENDING',
+    "note" TEXT,
+    "decidedAt" TIMESTAMP(3),
+    "returnedAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "requisitions_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "requisition_items" (
+    "id" TEXT NOT NULL,
+    "requisitionId" TEXT NOT NULL,
+    "productId" TEXT NOT NULL,
+    "quantity" INTEGER NOT NULL,
+
+    CONSTRAINT "requisition_items_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -131,6 +175,16 @@ CREATE TABLE "purchase_order_items" (
     CONSTRAINT "purchase_order_items_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "system_settings" (
+    "id" TEXT NOT NULL DEFAULT 'global',
+    "showLoginDemoAccounts" BOOLEAN NOT NULL DEFAULT true,
+    "logoUrl" TEXT,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "system_settings_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "organizations_slug_key" ON "organizations"("slug");
 
@@ -160,6 +214,18 @@ CREATE INDEX "stock_movements_organizationId_productId_createdAt_idx" ON "stock_
 
 -- CreateIndex
 CREATE INDEX "stock_movements_organizationId_createdAt_idx" ON "stock_movements"("organizationId", "createdAt");
+
+-- CreateIndex
+CREATE INDEX "requisitions_organizationId_status_idx" ON "requisitions"("organizationId", "status");
+
+-- CreateIndex
+CREATE INDEX "requisitions_organizationId_requesterId_createdAt_idx" ON "requisitions"("organizationId", "requesterId", "createdAt");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "requisitions_organizationId_reqNumber_key" ON "requisitions"("organizationId", "reqNumber");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "requisition_items_requisitionId_productId_key" ON "requisition_items"("requisitionId", "productId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "suppliers_organizationId_name_key" ON "suppliers"("organizationId", "name");
@@ -198,6 +264,21 @@ ALTER TABLE "stock_movements" ADD CONSTRAINT "stock_movements_productId_fkey" FO
 ALTER TABLE "stock_movements" ADD CONSTRAINT "stock_movements_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "requisitions" ADD CONSTRAINT "requisitions_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "requisitions" ADD CONSTRAINT "requisitions_requesterId_fkey" FOREIGN KEY ("requesterId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "requisitions" ADD CONSTRAINT "requisitions_decidedById_fkey" FOREIGN KEY ("decidedById") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "requisition_items" ADD CONSTRAINT "requisition_items_requisitionId_fkey" FOREIGN KEY ("requisitionId") REFERENCES "requisitions"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "requisition_items" ADD CONSTRAINT "requisition_items_productId_fkey" FOREIGN KEY ("productId") REFERENCES "products"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "suppliers" ADD CONSTRAINT "suppliers_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -214,3 +295,35 @@ ALTER TABLE "purchase_order_items" ADD CONSTRAINT "purchase_order_items_purchase
 
 -- AddForeignKey
 ALTER TABLE "purchase_order_items" ADD CONSTRAINT "purchase_order_items_productId_fkey" FOREIGN KEY ("productId") REFERENCES "products"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- Enable Row-Level Security on every public table. This app never queries
+-- Postgres through Supabase's auto-generated PostgREST/GraphQL API — Prisma
+-- connects directly as the table-owner role, which bypasses RLS regardless
+-- of policies. So no policies are added here; enabling RLS with zero
+-- policies simply makes every table deny-by-default to the anon/authenticated
+-- PostgREST roles, closing the public-API exposure Supabase's Security
+-- Advisor flags, without touching app behavior.
+ALTER TABLE "organizations" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "users" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "memberships" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "categories" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "products" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "stock_movements" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "requisitions" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "requisition_items" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "suppliers" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "purchase_orders" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "purchase_order_items" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "system_settings" ENABLE ROW LEVEL SECURITY;
+
+-- Same Security Advisor fix, but for Prisma's own migration-history table,
+-- which lives in `public` too. Guarded with a to_regclass check because this
+-- table does not exist yet inside Prisma's shadow database (used to compute
+-- `migrate dev` diffs) — without the guard, every `migrate dev` run fails
+-- trying to ALTER a table shadow-db never creates.
+DO $$
+BEGIN
+  IF to_regclass('public._prisma_migrations') IS NOT NULL THEN
+    EXECUTE 'ALTER TABLE "_prisma_migrations" ENABLE ROW LEVEL SECURITY';
+  END IF;
+END $$;

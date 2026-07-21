@@ -73,3 +73,34 @@ export async function requireAdmin(): Promise<SessionContext> {
   if (!isAdminRole(ctx.role)) redirect("/dashboard");
   return ctx;
 }
+
+/**
+ * Platform admin is separate from MembershipRole: an org OWNER/ADMIN only
+ * proves authority over their own organization, but SystemSetting is one
+ * row shared by every organization in the deployment (it drives the public
+ * sign-in page). Anyone can self-sign-up and become OWNER of a brand-new
+ * org, so gating cross-tenant state on org-level admin would let any
+ * self-registered org admin overwrite branding/login settings for everyone
+ * else on the install.
+ */
+const getPlatformAdminFlag = cache(
+  async (userId: string): Promise<boolean> => {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { isPlatformAdmin: true },
+    });
+    return user?.isPlatformAdmin ?? false;
+  },
+);
+
+export async function isPlatformAdmin(userId: string): Promise<boolean> {
+  return getPlatformAdminFlag(userId);
+}
+
+/** Gate for deployment-wide settings. Falls back to /settings, not /dashboard,
+ * since only org admins reach this check at all. */
+export async function requirePlatformAdmin(): Promise<SessionContext> {
+  const ctx = await requireAdmin();
+  if (!(await getPlatformAdminFlag(ctx.userId))) redirect("/settings");
+  return ctx;
+}

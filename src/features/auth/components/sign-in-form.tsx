@@ -95,9 +95,9 @@ export function SignInForm({ showDemoAccounts }: { showDemoAccounts: boolean }) 
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <Card>
-        <CardContent className="space-y-5 pt-6">
+        <CardContent className="space-y-6 pt-1">
           <Tabs value={portal} onValueChange={(value) => setPortal(value as Portal)}>
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="USER">
@@ -200,9 +200,9 @@ export function SignInForm({ showDemoAccounts }: { showDemoAccounts: boolean }) 
       </Card>
 
       {showDemoAccounts ? (
-        <Card className="bg-muted/40">
+        <Card className="border-dashed bg-muted/35 shadow-none">
           <CardContent className="pt-6">
-            <p className="mb-4 text-center text-sm font-semibold">{dict.auth.roleSplitTitle}</p>
+            <p className="mb-5 text-xs font-semibold tracking-[0.08em] text-muted-foreground uppercase">{dict.auth.roleSplitTitle}</p>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="mb-2 flex items-center gap-1.5 text-sm font-medium">
@@ -258,7 +258,7 @@ function DemoAccountBox({
 }) {
   const { dict } = useLanguage();
   return (
-    <div className="mt-3 space-y-1.5 rounded-md border border-dashed p-2">
+    <div className="mt-3 space-y-1.5 rounded-[2px] border border-dashed bg-card/70 p-2.5">
       <p className="text-xs font-medium text-muted-foreground">{dict.auth.tryItOut}</p>
       <p className="break-all text-xs text-muted-foreground">{account.email}</p>
       <p className="text-xs text-muted-foreground">{account.password}</p>

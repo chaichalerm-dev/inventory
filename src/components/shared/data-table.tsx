@@ -49,17 +49,17 @@ export function DataTable<TData, TValue>({
   });
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {filterColumn ? (
         <Input
           placeholder={placeholder}
           value={(table.getColumn(filterColumn)?.getFilterValue() as string) ?? ""}
           onChange={(e) => table.getColumn(filterColumn)?.setFilterValue(e.target.value)}
-          className="max-w-sm"
+          className="max-w-sm bg-card"
           aria-label={placeholder}
         />
       ) : null}
-      <div className="overflow-x-auto rounded-md border">
+      <div className="overflow-x-auto rounded-sm border bg-card text-foreground shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (

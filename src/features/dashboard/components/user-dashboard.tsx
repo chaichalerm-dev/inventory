@@ -43,7 +43,7 @@ export async function UserDashboard({
   return (
     <>
       <PageHeader title={t.title} description={t.description} />
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           title={t.totalRequisitions}
           value={data.total}
@@ -73,7 +73,7 @@ export async function UserDashboard({
           tone="violet"
         />
       </div>
-      <div className="mt-4 grid gap-4 xl:grid-cols-3">
+      <div className="mt-5 grid gap-5 xl:grid-cols-3">
         <Card className="xl:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between space-y-0">
             <CardTitle className="text-base">{t.recentTitle}</CardTitle>
@@ -128,14 +128,17 @@ export async function UserDashboard({
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-2">
-              {quickLinks.map(({ href, label, icon: Icon }) => (
+              {quickLinks.map(({ href, label, icon: Icon }, index) => (
                 <Link
                   key={label}
                   href={href}
-                  className="flex flex-col items-center gap-2 rounded-lg border p-4 text-sm transition-colors hover:bg-accent"
-                >
-                  <Icon className="size-5 text-muted-foreground" aria-hidden="true" />
-                  {label}
+                className="group flex min-h-28 flex-col items-start justify-between gap-3 rounded-[2px] border bg-background/45 p-4 text-sm font-medium transition-[background-color,border-color,transform] hover:-translate-y-0.5 hover:border-primary/45 hover:bg-accent/55"
+              >
+                  <span className="text-[0.65rem] font-mono text-muted-foreground">0{index + 1}</span>
+                  <span className="flex w-full items-end justify-between gap-2">
+                    {label}
+                    <Icon className="size-5 text-primary transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+                  </span>
                 </Link>
               ))}
             </div>

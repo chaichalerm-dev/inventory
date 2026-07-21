@@ -3,7 +3,7 @@
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Boxes, Trash2, Upload } from "lucide-react";
+import { Trash2, Upload } from "lucide-react";
 import { updateSystemSettingsAction } from "@/features/settings/actions";
 import { resizeImageToDataUrl } from "@/lib/image";
 import { useLanguage } from "@/lib/i18n/language-provider";
@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
+import { BrandMark } from "@/components/brand/brand-mark";
 
 const MAX_LOGO_DIMENSION = 256;
 const MAX_LOGO_BYTES = 8 * 1024 * 1024;
@@ -99,15 +100,7 @@ export function SystemSettingsForm({
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-4">
-            <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-primary text-primary-foreground">
-              {preview ? (
-                // Local data URL, not a remote src next/image can optimize.
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={preview} alt="" className="size-full object-cover" />
-              ) : (
-                <Boxes className="size-7" aria-hidden="true" />
-              )}
-            </div>
+            <BrandMark logoUrl={preview} className="size-16 border border-border" />
             <div className="flex flex-col gap-2">
               <input
                 ref={inputRef}

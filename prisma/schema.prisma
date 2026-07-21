@@ -44,6 +44,10 @@ model User {
   avatarUrl    String?  @db.Text
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  // Grants access to deployment-wide SystemSetting, which every organization's
+  // sign-in page reads — distinct from MembershipRole, which only ever proves
+  // admin rights within one org and must never gate cross-tenant state.
+  isPlatformAdmin       Boolean         @default(false)
 
   memberships           Membership[]
   stockMovements        StockMovement[]

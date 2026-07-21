@@ -7,10 +7,8 @@ export const contentType = "image/png";
 // baked in at build time — must re-read SystemSetting on every request.
 export const dynamic = "force-dynamic";
 
-// Browser-tab icon — mirrors the app shell's logo mark (bg-primary square +
-// lucide "Boxes" glyph, see components/layout/app-shell.tsx) so the tab icon
-// and in-app branding stay visually consistent, unless a custom logo has
-// been uploaded in settings.
+// Browser-tab icon — mirrors the app shell's navy, white, and coral brand
+// language, unless a custom organization logo has been uploaded in settings.
 export default async function Icon() {
   // The favicon must never 500 — a database hiccup here would make every
   // open tab flash a broken icon even though the page itself may be fine.
@@ -30,8 +28,10 @@ export default async function Icon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#2563eb",
-          borderRadius: 7,
+          position: "relative",
+          overflow: "hidden",
+          background: "#101827",
+          borderRadius: 4,
         }}
       >
         {logoUrl ? (
@@ -44,28 +44,11 @@ export default async function Icon() {
             style={{ objectFit: "cover" }}
           />
         ) : (
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#fafafa"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M2.97 12.92A2 2 0 0 0 2 14.63v3.24a2 2 0 0 0 .97 1.71l3 1.8a2 2 0 0 0 2.06 0L12 19v-5.5l-5-3-4.03 2.42Z" />
-            <path d="m7 16.5-4.74-2.85" />
-            <path d="m7 16.5 5-3" />
-            <path d="M7 16.5v5.17" />
-            <path d="M12 13.5V19l3.97 2.38a2 2 0 0 0 2.06 0l3-1.8a2 2 0 0 0 .97-1.71v-3.24a2 2 0 0 0-.97-1.71L17 10.5l-5 3Z" />
-            <path d="m17 16.5-5-3" />
-            <path d="m17 16.5 4.74-2.85" />
-            <path d="M17 16.5v5.17" />
-            <path d="M7.97 4.42A2 2 0 0 0 7 6.13v4.37l5 3 5-3V6.13a2 2 0 0 0-.97-1.71l-3-1.8a2 2 0 0 0-2.06 0l-3 1.8Z" />
-            <path d="M12 8 7.26 5.15" />
-            <path d="m12 8 4.74-2.85" />
-            <path d="M12 13.5V8" />
+          <svg width="26" height="26" viewBox="0 0 32 32" fill="none">
+            <path fill="#49B6A4" d="M5 9 16 3.5 27 9 16 14.5 5 9Z" />
+            <path fill="#F8FAFC" d="m5 11.5 10 5V28L5 22.7V11.5Z" />
+            <path fill="#CBD5E1" d="m17 16.5 10-5v11.2L17 28V16.5Z" />
+            <path fill="#F17755" d="M21.5 21.5H27V27h-5.5z" />
           </svg>
         )}
       </div>

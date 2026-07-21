@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Boxes, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import type { MembershipRole } from "@/generated/prisma/enums";
 import { Button } from "@/components/ui/button";
 import { SidebarNav } from "@/components/layout/sidebar-nav";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { UserMenu } from "@/components/layout/user-menu";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
+import { BrandMark } from "@/components/brand/brand-mark";
 import { useLanguage } from "@/lib/i18n/language-provider";
 
 const SIDEBAR_COLLAPSED_KEY = "stockpro.sidebar-collapsed";
@@ -54,33 +55,31 @@ export function AppShell({
   }
 
   return (
-    <div className="flex h-svh overflow-hidden">
+    <div className="flex h-svh overflow-hidden bg-background">
       <aside
         className={
-          "hidden shrink-0 flex-col overflow-y-auto border-r bg-sidebar transition-[width] duration-200 md:flex " +
-          (collapsed ? "w-16" : "w-60")
+          "relative hidden shrink-0 flex-col overflow-y-auto border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width] duration-200 md:flex " +
+          (collapsed ? "w-[4.5rem]" : "w-[17rem]")
         }
       >
-        <div className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
-          {!collapsed ? (
-            <>
-              <span className="flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-md bg-primary text-primary-foreground">
-                {logoUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={logoUrl} alt="" className="size-full object-cover" />
-                ) : (
-                  <Boxes className="size-4" aria-hidden="true" />
-                )}
-              </span>
-              <Link href="/dashboard" className="truncate font-semibold">
-                {dict.common.appName}
-              </Link>
-            </>
-          ) : null}
+        <div className="flex h-17 shrink-0 items-center gap-3 border-b border-sidebar-border px-4">
+          <Link href="/dashboard" className="flex min-w-0 items-center gap-3">
+              <BrandMark logoUrl={logoUrl} className="size-9" />
+              {!collapsed ? (
+                <span className="min-w-0">
+                  <span className="block truncate text-base font-bold tracking-[-0.02em] text-white">
+                    {dict.common.appName}
+                  </span>
+                  <span className="block truncate text-[0.65rem] font-medium tracking-[0.12em] text-sidebar-foreground/70 uppercase">
+                    {dict.common.tagline}
+                  </span>
+                </span>
+              ) : null}
+          </Link>
           <Button
             variant="ghost"
             size="icon"
-            className={collapsed ? "mx-auto" : "ml-auto"}
+            className={collapsed ? "hidden" : "ml-auto text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-white"}
             onClick={toggleCollapsed}
             aria-label={collapsed ? dict.nav.expandMenu : dict.nav.collapseMenu}
           >
@@ -92,23 +91,44 @@ export function AppShell({
           </Button>
         </div>
         <SidebarNav role={role} collapsed={collapsed} />
-        {!collapsed ? (
-          <div className="mt-auto shrink-0 border-t px-4 py-3">
-            <p className="truncate text-sm font-medium">{name}</p>
-            <p className="text-xs text-muted-foreground">{roleLabel}</p>
-          </div>
-        ) : null}
+        <div className="mt-auto shrink-0 border-t border-sidebar-border p-3">
+          {collapsed ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="mx-auto text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-white"
+              onClick={toggleCollapsed}
+              aria-label={dict.nav.expandMenu}
+            >
+              <PanelLeftOpen className="size-4" aria-hidden="true" />
+            </Button>
+          ) : (
+            <div className="flex items-center gap-3 border-l-2 border-sidebar-primary px-3 py-1.5">
+              <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-sidebar-accent text-xs font-bold text-white">
+                {name.trim().charAt(0).toUpperCase() || "U"}
+              </span>
+              <span className="min-w-0">
+                <span className="block truncate text-sm font-semibold text-white">{name}</span>
+                <span className="block text-xs text-sidebar-foreground/75">{roleLabel}</span>
+              </span>
+            </div>
+          )}
+        </div>
       </aside>
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-        <header className="flex h-14 shrink-0 items-center justify-between gap-2 border-b px-4">
+        <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b bg-card/95 px-4 text-foreground backdrop-blur md:px-7">
           <MobileNav role={role} />
+          <div className="hidden items-center gap-2 text-xs font-medium tracking-[0.04em] text-muted-foreground md:flex">
+            <span className="size-1.5 bg-primary" aria-hidden="true" />
+            {dict.common.tagline}
+          </div>
           <div className="ml-auto flex items-center gap-1">
             <LanguageSwitcher />
             <UserMenu name={name} email={email} roleLabel={roleLabel} avatarUrl={avatarUrl} />
           </div>
         </header>
-        <main className="min-h-0 flex-1 overflow-y-auto p-4 md:p-6">
-          {children}
+        <main className="app-canvas min-h-0 flex-1 overflow-y-auto p-4 md:p-7 xl:p-9">
+          <div className="mx-auto w-full max-w-[96rem]">{children}</div>
         </main>
       </div>
     </div>

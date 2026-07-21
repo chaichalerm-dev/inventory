@@ -29,13 +29,13 @@ export function SidebarNav({
   const groups = getNavGroups(role, dict);
 
   return (
-    <nav aria-label={dict.nav.mainNavigation} className="flex flex-col gap-4 p-2">
+    <nav aria-label={dict.nav.mainNavigation} className="flex flex-col gap-5 p-3 pt-5">
       {groups.map((group) => (
-        <div key={group.label} className="flex flex-col gap-1">
+        <div key={group.label} className="flex flex-col gap-1.5">
           {collapsed ? (
-            <div className="mx-2 my-1 border-t" role="separator" />
+            <div className="mx-2 my-1 border-t border-sidebar-border" role="separator" />
           ) : (
-            <p className="px-3 text-xs font-medium text-muted-foreground/80">
+            <p className="px-3 pb-1 text-[0.65rem] font-semibold tracking-[0.14em] text-sidebar-foreground/65 uppercase">
               {group.label}
             </p>
           )}
@@ -75,11 +75,11 @@ function NavLink({
       onClick={onNavigate}
       aria-current={isActive ? "page" : undefined}
       className={cn(
-        "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+        "relative flex min-h-10 items-center gap-3 rounded-[2px] px-3 py-2 text-sm font-medium transition-colors before:absolute before:inset-y-2 before:left-0 before:w-0.5 before:bg-sidebar-primary before:opacity-0",
         collapsed && "justify-center px-0",
         isActive
-          ? "bg-accent text-accent-foreground"
-          : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+          ? "bg-sidebar-accent text-white before:opacity-100"
+          : "text-sidebar-foreground/78 hover:bg-sidebar-accent hover:text-white",
       )}
     >
       <Icon className="size-4 shrink-0" aria-hidden="true" />

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/session";
+import { requireAdmin, requirePlatformAdmin } from "@/lib/session";
 import { fail, ok, type ActionResult } from "@/lib/action-result";
 import { getLocale } from "@/lib/i18n/get-locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
@@ -39,7 +39,7 @@ export async function updateSystemSettingsAction(
   input: SystemSettingsInput,
 ): Promise<ActionResult> {
   const dict = getDictionary(await getLocale());
-  await requireAdmin();
+  await requirePlatformAdmin();
   const parsed = systemSettingsSchema.safeParse(input);
   if (!parsed.success) {
     return fail(dict.auth.invalidInput, parsed.error.flatten().fieldErrors);

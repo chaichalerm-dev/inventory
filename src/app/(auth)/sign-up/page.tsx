@@ -19,8 +19,9 @@ export default async function SignUpPage() {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>{dict.auth.signUpTitle}</CardTitle>
+      <CardHeader className="border-b pb-5">
+        <p className="text-[0.65rem] font-semibold tracking-[0.14em] text-primary uppercase">{dict.common.tagline}</p>
+        <CardTitle className="text-2xl">{dict.auth.signUpTitle}</CardTitle>
         <CardDescription>{dict.auth.signUpDesc}</CardDescription>
       </CardHeader>
       <CardContent>

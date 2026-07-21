@@ -24,11 +24,11 @@ export function LowStockTable({
 }: LowStockTableProps) {
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 border-b pb-4">
         <CardTitle className="text-base">{title}</CardTitle>
         <Link
           href="/products"
-          className="text-xs text-muted-foreground underline-offset-4 hover:underline"
+          className="text-xs font-semibold text-primary underline-offset-4 hover:underline"
         >
           {viewAllLabel}
         </Link>
@@ -49,7 +49,7 @@ export function LowStockTable({
               return (
                 <li
                   key={product.id}
-                  className="flex items-center justify-between gap-2 py-2.5 text-sm"
+                  className="flex items-center justify-between gap-2 py-3 text-sm"
                 >
                   <span className="min-w-0 truncate">{product.name}</span>
                   <span className="flex shrink-0 items-center gap-2">
