@@ -80,6 +80,16 @@ src/lib/                  cross-cutting infra: prisma client, auth.ts, session.t
   branched on before it returns a match. Apply the same rule to any future
   check that depends on "does this email/account have property X" — verify
   the password first, always.
+- **Login attempts are rate-limited.** `verifyCredentials()` calls into
+  `src/lib/login-rate-limit.ts`, which locks an email out for 15 minutes
+  after 5 failed attempts within that window (counted regardless of whether
+  the email belongs to a real account, so lockout timing doesn't leak
+  account existence either). The store is an in-memory `Map`, correct only
+  for a single-process deployment (matches the current standalone Docker
+  container) — if this app is ever horizontally scaled to multiple
+  instances, swap it for a shared store (Redis, DB row) or each instance
+  will track attempts independently and the limit becomes trivially
+  bypassable by hitting different instances.
 
 ## Language & UI conventions
 
@@ -149,6 +159,16 @@ src/lib/                  cross-cutting infra: prisma client, auth.ts, session.t
 tier — `OWNER` is only distinguished from `ADMIN` in `/users` (an owner's role
 can't be changed or removed via the UI). Never grant `OWNER` from an in-app
 action; it's assigned exactly once, at sign-up, to the org creator.
+
+**Platform admin is a separate axis from `MembershipRole`.** `User.isPlatformAdmin`
+(a boolean, not a role) gates deployment-wide state — currently just
+`SystemSetting` (branding/logo, sign-in page copy) via `requirePlatformAdmin()`
+in `src/lib/session.ts`. It exists because anyone can self-sign-up and become
+`OWNER` of a brand-new org (see the sign-up flow in
+`src/features/auth/actions.ts`), so gating cross-tenant state on org-level
+`ADMIN`/`OWNER` would let any self-registered org owner overwrite settings
+shared by every organization on the install. Nothing in the UI grants this
+flag — it's set directly in the database for whoever operates the deployment.
 
 ## Requisition status machine
 
