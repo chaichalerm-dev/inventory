@@ -4,6 +4,11 @@ import { compare } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import type { MembershipRole } from "@/generated/prisma/enums";
 import { signInSchema } from "@/features/auth/schemas";
+import {
+  assertNotRateLimited,
+  clearLoginAttempts,
+  recordFailedLogin,
+} from "@/lib/login-rate-limit";
 
 export type VerifiedCredentials = {
   userId: string;
@@ -30,21 +35,28 @@ export async function verifyCredentials(
   email: string,
   password: string,
 ): Promise<VerifiedCredentials | null> {
+  assertNotRateLimited(email);
+
   const user = await prisma.user.findUnique({
     where: { email },
     include: { memberships: { take: 1 } },
   });
   if (!user) {
     await compare(password, DUMMY_PASSWORD_HASH);
+    recordFailedLogin(email);
     return null;
   }
 
   const valid = await compare(password, user.passwordHash);
-  if (!valid) return null;
+  if (!valid) {
+    recordFailedLogin(email);
+    return null;
+  }
 
   const membership = user.memberships[0];
   if (!membership) return null;
 
+  clearLoginAttempts(email);
   return {
     userId: user.id,
     name: user.name,

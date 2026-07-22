@@ -88,6 +88,7 @@ const en: Dictionary = {
     invalidCredentials: "Incorrect email or password",
     invalidInput: "Invalid input",
     dbSlow: "The system is running slowly right now. Please try again.",
+    tooManyAttempts: "Too many failed login attempts. Please try again in {minutes} minute(s).",
     wrongTabIsAdmin: "This account is an administrator. Please sign in via the Admin Login tab.",
     wrongTabIsUser: "This account is an employee account. Please sign in via the User Login tab.",
     signOutConfirmTitle: "Sign out?",

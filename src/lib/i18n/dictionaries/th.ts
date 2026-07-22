@@ -86,6 +86,7 @@ const th = {
     invalidCredentials: "อีเมลหรือรหัสผ่านไม่ถูกต้อง",
     invalidInput: "ข้อมูลไม่ถูกต้อง",
     dbSlow: "ระบบทำงานช้าในขณะนี้ กรุณาลองใหม่อีกครั้ง",
+    tooManyAttempts: "พยายามเข้าสู่ระบบผิดหลายครั้งเกินไป กรุณาลองใหม่อีกครั้งในอีก {minutes} นาที",
     wrongTabIsAdmin: "บัญชีนี้เป็นผู้ดูแลระบบ กรุณาเข้าสู่ระบบผ่านแท็บ Admin Login",
     wrongTabIsUser: "บัญชีนี้เป็นบัญชีพนักงาน กรุณาเข้าสู่ระบบผ่านแท็บ User Login",
     signOutConfirmTitle: "ออกจากระบบ?",

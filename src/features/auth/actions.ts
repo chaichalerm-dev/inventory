@@ -4,12 +4,17 @@ import { hash } from "bcryptjs";
 import { AuthError } from "next-auth";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { signIn, signOut, verifyCredentials } from "@/lib/auth";
+import { LoginRateLimitError } from "@/lib/login-rate-limit";
 import { isDbUnavailableError, prisma } from "@/lib/prisma";
 import { uniqueSlug } from "@/lib/slug";
 import { isAdminRole } from "@/lib/roles";
 import { fail, ok, type ActionResult } from "@/lib/action-result";
 import { getLocale } from "@/lib/i18n/get-locale";
-import { getDictionary, type Dictionary } from "@/lib/i18n/get-dictionary";
+import {
+  getDictionary,
+  interpolate,
+  type Dictionary,
+} from "@/lib/i18n/get-dictionary";
 import {
   signInFormSchema,
   signUpSchema,
@@ -78,6 +83,10 @@ export async function signInAction(
   try {
     verified = await verifyCredentials(email, password);
   } catch (error) {
+    if (error instanceof LoginRateLimitError) {
+      const minutes = Math.ceil(error.retryAfterMs / 60_000);
+      return fail(interpolate(dict.auth.tooManyAttempts, { minutes }));
+    }
     if (isDbUnavailableError(error)) {
       return fail(dict.auth.dbSlow);
     }
